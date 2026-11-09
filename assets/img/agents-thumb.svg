@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" font-family="Consolas, ui-monospace, monospace">
+  <rect width="640" height="380" rx="18" fill="#0c0c0c"/>
+  <rect width="640" height="40" rx="18" fill="#151515"/>
+  <rect y="22" width="640" height="18" fill="#151515"/>
+  <circle cx="24" cy="20" r="6" fill="#333"/><circle cx="44" cy="20" r="6" fill="#333"/><circle cx="64" cy="20" r="6" fill="#333"/>
+  <text x="90" y="25" font-size="13" fill="#777">claude — ~/project</text>
+  <g font-size="15">
+    <text x="28" y="80" fill="#d97757">✻ Claude Code</text>
+    <text x="28" y="112" fill="#777">&gt; 리팩터링하고 QA 보고서까지 만들어 줘</text>
+    <text x="28" y="148" fill="#6ea8ff">● plan_team.start_plan()</text>
+    <text x="48" y="174" fill="#777">↳ docs/plans/refactor.md</text>
+    <text x="28" y="208" fill="#6ea8ff">● backend_team.start_backend()</text>
+    <text x="48" y="234" fill="#777">↳ test fail 1→0 · semgrep 1→0</text>
+    <text x="28" y="268" fill="#6ea8ff">● report_team.start_report()</text>
+    <text x="48" y="294" fill="#777">↳ reports/&lt;job_id&gt;/report.html</text>
+    <text x="28" y="334" fill="#3ddc84">✓ merge는 사람이 결정</text>
+  </g>
+</svg>
