@@ -93,13 +93,18 @@
 
   size();
   addEventListener('resize', size);
-  let visible = false;
-  new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(cv);
+  // the frame loop only runs while the canvas is on screen
+  let visible = false, looping = false;
+  new IntersectionObserver(e => {
+    visible = e[0].isIntersecting;
+    if (visible && !looping) { looping = true; requestAnimationFrame(loop); }
+  }).observe(cv);
 
   let last = 0;
   function loop(t) {
+    if (!visible) { looping = false; return; }
     requestAnimationFrame(loop);
-    if (!visible || t - last < 70) return; // ~14 fps is plenty for a flicker
+    if (t - last < 70) return; // ~14 fps is plenty for a flicker
     last = t;
     const r = cv.getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 0.5 + r.height * 0.5)));
@@ -112,5 +117,4 @@
     }
     render();
   }
-  requestAnimationFrame(loop);
 })();

@@ -480,7 +480,7 @@ section { position: relative; }
 .is-swapping { opacity: 0; filter: blur(8px); }
 
 .case { padding: 120px 0 40px; }
-.case.is-hidden, .g-card.is-hidden { display: none; }
+.case.is-hidden, .g-card.is-hidden, .d-card.is-hidden, .deck-dots i.is-hidden { display: none; }
 .case-h { font-size: clamp(20px, 1.7vw, 30px); font-weight: 500; letter-spacing: -0.025em; max-width: 1100px; }
 .case-tags { color: var(--dim); font-size: 13px; margin-top: 8px; }
 .case-grid { display: grid; grid-template-columns: 1fr 0.9fr; gap: 22px; margin-top: 42px; }
@@ -717,6 +717,14 @@ section { position: relative; }
   .feat-row { grid-template-columns: repeat(2, 1fr); }
   .grid-view { grid-template-columns: repeat(2, 1fr); }
 }
+@media (max-width: 1000px) {
+  /* the expanded nav nearly fills the width: centre drop menus under the nav pill (its backdrop-filter
+     makes it the containing block), move the theme button down */
+  .nav-drop { position: static; }
+  .drop-menu { left: 50%; top: calc(100% + 8px); translate: -50% 0; }
+  .drop-menu::before { top: -16px; height: 16px; }
+  .theme-btn { top: auto; bottom: 104px; }
+}
 @media (max-width: 760px) {
   :root { --gx: 22px; }
   .side-ind, .drop-menu { display: none; }
@@ -758,4 +766,5 @@ section { position: relative; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   html { scroll-behavior: auto; }
+  .hand .hw { animation: none !important; clip-path: none; } /* no staggered delays: show the quote at once */
 }

@@ -60,7 +60,11 @@
       img.src = a.dataset.img; cap.textContent = a.dataset.cap;
     };
     items.forEach(a => a.addEventListener('mouseenter', () => pick(a)));
-    $$('a', m).forEach(a => a.addEventListener('click', () => a.blur()));
+    $$('a', m).forEach(a => a.addEventListener('click', e => {
+      a.blur();
+      const id = a.getAttribute('href').slice(1);
+      if (id.startsWith('p-')) { e.preventDefault(); showProject(id); } // may be filtered out
+    }));
     pick(items[0]);
   });
 
@@ -328,7 +332,6 @@
     </div>`).join('');
   dots.innerHTML = projects.map(() => '<i></i>').join('');
   const dCards = $$('.d-card', deck);
-  const flip = c => c.classList.toggle('flipped');
   function layoutDeck() {
     order.forEach((idx, pos) => {
       const c = dCards[idx];
@@ -338,7 +341,15 @@
       c.style.opacity = pos > 3 ? 0 : 1;
     });
     $$('i', dots).forEach((d, k) => d.classList.toggle('on', k === order[0]));
+    // only the visible face of the top card is focusable / exposed to assistive tech
+    dCards.forEach((c, i) => {
+      const flipped = c.classList.contains('flipped');
+      c.inert = i !== order[0];
+      $('.d-front', c).inert = flipped;
+      $('.d-back', c).inert = !flipped;
+    });
   }
+  const flip = c => { c.classList.toggle('flipped'); layoutDeck(); };
   const nextCard = dir => {
     if (dir > 0) order.push(order.shift()); else order.unshift(order.pop());
     dCards.forEach(c => c.classList.remove('flipped'));
@@ -349,7 +360,10 @@
   layoutDeck();
   deck.addEventListener('click', e => {
     const b = e.target.closest('.d-flipbtn');
-    if (b) flip(b.closest('.d-card'));
+    if (!b) return;
+    const c = b.closest('.d-card');
+    flip(c);
+    $(c.classList.contains('flipped') ? '.d-back .d-flipbtn' : '.d-front .d-flipbtn', c).focus(); // keep keyboard focus on the visible face
   });
   // drag top card aside (throw = next card, tap = flip)
   let drag = null;
@@ -372,10 +386,8 @@
     if (Math.abs(dx) > 90) {
       c.style.transform = `translateX(${Math.sign(dx) * 520}px) rotate(${Math.sign(dx) * 20}deg)`;
       setTimeout(() => nextCard(1), 220);
-    } else {
-      if (Math.abs(dx) < 4) flip(c);
-      layoutDeck();
-    }
+    } else if (Math.abs(dx) < 4) flip(c);
+    else layoutDeck();
   };
   deck.addEventListener('pointerup', endDrag);
   deck.addEventListener('pointercancel', endDrag);
@@ -393,8 +405,7 @@
     const a = e.target.closest('[data-goto]');
     if (!a) return;
     e.preventDefault();
-    $$('#viewBtns .view')[0].click();
-    requestAnimationFrame(() => document.getElementById(a.dataset.goto).scrollIntoView({ behavior: 'smooth' }));
+    showProject(a.dataset.goto);
   }));
 
   /* filters: counts on chips, thumbnail stack, blur-out -> swap -> blur-in */
@@ -405,23 +416,36 @@
   $$('#filterChips .chip').forEach(b => { $('sup', b).textContent = projects.filter(p => inCat(p, b.dataset.f)).length; });
   renderFaces('all');
   let swapT = 0;
+  const applyFilter = f => {
+    $$('#filterChips .chip').forEach(x => x.classList.toggle('is-on', x.dataset.f === f));
+    let n = 0;
+    $$('.case, .g-card').forEach(el => {
+      const ok = f === 'all' || el.dataset.cat.split(' ').includes(f);
+      el.classList.toggle('is-hidden', !ok);
+      if (ok && el.classList.contains('case')) n++;
+    });
+    $('#projCount').textContent = n;
+    renderFaces(f);
+    // deck keeps only the matching cards in its rotation
+    order = projects.map((_, i) => i).filter(i => inCat(projects[i], f));
+    dCards.forEach((c, i) => { c.classList.toggle('is-hidden', !order.includes(i)); c.classList.remove('flipped'); });
+    $$('i', dots).forEach((d, i) => d.classList.toggle('is-hidden', !order.includes(i)));
+    layoutDeck();
+    [showcase, gridView].forEach(el => el.classList.remove('is-swapping'));
+  };
   $$('#filterChips .chip').forEach(b => b.addEventListener('click', () => {
     $$('#filterChips .chip').forEach(x => x.classList.toggle('is-on', x === b));
-    const f = b.dataset.f;
     [showcase, gridView].forEach(el => el.classList.add('is-swapping'));
     clearTimeout(swapT);
-    swapT = setTimeout(() => {
-      let n = 0;
-      $$('.case, .g-card').forEach(el => {
-        const ok = f === 'all' || el.dataset.cat.split(' ').includes(f);
-        el.classList.toggle('is-hidden', !ok);
-        if (ok && el.classList.contains('case')) n++;
-      });
-      $('#projCount').textContent = n;
-      renderFaces(f);
-      [showcase, gridView].forEach(el => el.classList.remove('is-swapping'));
-    }, reduce ? 0 : 260);
+    swapT = setTimeout(() => applyFilter(b.dataset.f), reduce ? 0 : 260);
   }));
+  // jump to a project from a menu / grid / deck link, clearing a filter that hides it
+  const showProject = id => {
+    const el = document.getElementById(id);
+    if (el.classList.contains('is-hidden')) { clearTimeout(swapT); applyFilter('all'); }
+    $$('#viewBtns .view')[0].click();
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth' }));
+  };
 
   /* ---------- terminal typing (agents case + experiments) ---------- */
   function typeLoop(el, lines, speed) {
