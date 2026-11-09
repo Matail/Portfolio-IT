@@ -32,14 +32,37 @@
   const links = $$('.nav-link[data-section]');
   const sections = links.map(l => document.getElementById(l.dataset.section)).filter(Boolean);
   const setActive = id => links.forEach(l => l.classList.toggle('is-active', l.dataset.section === id));
+  // left-edge indicator: the active section's bar is longest, neighbours shrink with distance
+  const indBars = $$('#sideInd a');
+  const IND_W = [38, 26, 17, 10, 7];
+  const setIndicator = id => {
+    const k = sections.findIndex(s => s.id === id);
+    indBars.forEach((a, j) => {
+      a.style.setProperty('--w', IND_W[Math.min(IND_W.length - 1, Math.abs(j - k))] + 'px');
+      a.classList.toggle('on', j === k);
+    });
+  };
   const spy = () => {
     const y = window.scrollY + innerHeight * 0.35;
     let cur = 'home';
     sections.forEach(s => { if (s.offsetTop <= y) cur = s.id; });
     setActive(cur);
+    setIndicator(cur);
   };
   addEventListener('scroll', spy, { passive: true });
   spy();
+
+  /* ---------- nav mega menus: hovering an item swaps the preview ---------- */
+  $$('.mega').forEach(m => {
+    const img = $('.mega-prev img', m), cap = $('.mega-prev p', m), items = $$('.mega-list a', m);
+    const pick = a => {
+      items.forEach(x => x.classList.toggle('on', x === a));
+      img.src = a.dataset.img; cap.textContent = a.dataset.cap;
+    };
+    items.forEach(a => a.addEventListener('mouseenter', () => pick(a)));
+    $$('a', m).forEach(a => a.addEventListener('click', () => a.blur()));
+    pick(items[0]);
+  });
 
   /* ---------- hero: rotating title + synced lines ---------- */
   const titles = [
@@ -51,8 +74,13 @@
   const titleEl = $('#heroTitle');
   const lineEls = $$('#heroLines li');
   let ti = 0;
+  // one span per character so blur in/out runs as a left-to-right stagger
   const renderTitle = i => {
-    titleEl.innerHTML = titles[i].map(w => '<span class="tw">' + w + '</span>').join('');
+    let n = 0;
+    titleEl.setAttribute('aria-label', titles[i].join(' '));
+    titleEl.innerHTML = titles[i].map(w => '<span class="tw" aria-hidden="true">' +
+      Array.from(w).map(c => '<span class="ch" style="--i:' + (n++) + '">' + (c === ' ' ? '&nbsp;' : c) + '</span>').join('') +
+      '</span>').join('');
   };
   const goHero = i => {
     titleEl.classList.add('out');
@@ -61,7 +89,7 @@
       renderTitle(ti);
       titleEl.offsetWidth; // reflow
       titleEl.classList.remove('out');
-    }, reduce ? 0 : 550);
+    }, reduce ? 0 : 700);
     lineEls.forEach((li, k) => {
       li.classList.toggle('is-active', k === i);
       li.classList.toggle('is-past', k < i);
@@ -105,20 +133,38 @@
     if (ang > 205 && ang < 240) return Math.max(0, 1 - d * 1.1) * (1 - Math.abs(ang - 218) / 22);
     return 0;
   }
+  // sky cycle (15 s): stars rise -> ridge shows -> clouds thicken -> searchlight sweeps -> dark
+  const SKY_MS = 15000;
+  const bump = (p, a, b) => {
+    if (p <= a || p >= b) return 0;
+    const k = (p - a) / (b - a), x = Math.min(1, k / 0.25, (1 - k) / 0.25);
+    return x * x * (3 - 2 * x);
+  };
+  const sky = { stars: 1, mtn: 1, cl: 0.5, beam: 0.7 }; // static values for reduced motion
   let t0 = 0;
   function drawStars(t) {
     requestAnimationFrame(drawStars);
     if (!heroVisible) return;
     const dt = Math.min(50, t - t0); t0 = t;
+    if (!reduce) {
+      const p = (t % SKY_MS) / SKY_MS;
+      sky.stars = 0.08 + 0.92 * bump(p, 0.02, 0.64);
+      sky.mtn = bump(p, 0.16, 0.58);
+      sky.cl = bump(p, 0.48, 0.8);
+      sky.beam = bump(p, 0.66, 0.97);
+    }
+    hero.style.setProperty('--mtn', sky.mtn.toFixed(3));
+    hero.style.setProperty('--cl', sky.cl.toFixed(3));
+    hero.style.setProperty('--beam-a', sky.beam.toFixed(3));
     ctx.clearRect(0, 0, W, H);
     const dark = window.isDark();
     for (const s of stars) {
       if (!reduce) { s.x += s.vx * dt * 0.06; s.y += s.vy * dt * 0.06; }
       if (s.y > H) { s.y = -2; s.x = Math.random() * W; }
       if (s.x < 0) s.x = W; if (s.x > W) s.x = 0;
-      const b = inBeam(s.x, s.y);
+      const b = inBeam(s.x, s.y) * sky.beam;
       const tw = 0.5 + 0.5 * Math.sin(t * 0.002 + s.p);
-      const a = (dark ? 0.18 : 0.08) + tw * (dark ? 0.25 : 0.1) + b * 0.9;
+      const a = ((dark ? 0.18 : 0.08) + tw * (dark ? 0.25 : 0.1)) * sky.stars + b * 0.9;
       ctx.fillStyle = dark ? 'rgba(255,255,255,' + a + ')' : 'rgba(180,140,60,' + a * 0.7 + ')';
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r + b * 0.8, 0, 6.283); ctx.fill();
     }
@@ -130,6 +176,43 @@
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
   }), { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   $$('.reveal').forEach(el => io.observe(el));
+
+  /* ---------- about photos: dot grid -> coarse mosaic -> sharp photo ---------- */
+  const drawFit = (c, img, w, h, contain) => {
+    const r = img.naturalWidth / img.naturalHeight;
+    let dw = w, dh = w / r;
+    if (contain ? r < w / h : r > w / h) { dh = h; dw = h * r; }
+    c.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  };
+  function pixelReveal(fig) {
+    const img = $('img', fig);
+    const done = () => fig.classList.add('done');
+    if (reduce) return done();
+    img.decode().then(() => {
+      const W = fig.clientWidth, H = fig.clientHeight, contain = fig.classList.contains('fit-contain');
+      const cv = document.createElement('canvas'), c = cv.getContext('2d');
+      const small = document.createElement('canvas'), sc = small.getContext('2d');
+      cv.width = W; cv.height = H; fig.appendChild(cv);
+      const steps = [56, 32, 18, 10, 5];
+      let k = 0;
+      const tick = () => {
+        if (k === steps.length) { done(); cv.style.opacity = 0; setTimeout(() => cv.remove(), 400); return; }
+        const px = steps[k++];
+        small.width = Math.ceil(W / px); small.height = Math.ceil(H / px);
+        sc.fillStyle = contain ? '#fff' : '#111'; sc.fillRect(0, 0, small.width, small.height);
+        drawFit(sc, img, small.width, small.height, contain);
+        c.imageSmoothingEnabled = false;
+        c.clearRect(0, 0, W, H);
+        c.drawImage(small, 0, 0, small.width * px, small.height * px);
+        setTimeout(tick, 120);
+      };
+      setTimeout(tick, 280);
+    }).catch(done);
+  }
+  const pxIO = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { pxIO.unobserve(e.target); pixelReveal(e.target); }
+  }), { threshold: 0.3 });
+  $$('.ph.px').forEach(f => pxIO.observe(f));
 
   /* ---------- statement: word-by-word highlight tied to scroll ---------- */
   const st = $('#statement');
@@ -196,11 +279,16 @@
 
   /* ---------- works: data for grid & deck ---------- */
   const projects = [
-    { id: 'p-streams', name: 'STREAMS AI', year: '캡스톤 → v17', sub: '데이터 누수를 찾아 다시 이긴 보드게임 AI', img: 'assets/img/st-curve.webp', v: 'v-blue', tags: ['#RL', '#SGAZ', '#재검증', '#Unity'], cat: 'ml data' },
-    { id: 'p-faf5', name: 'Logistics Cost AI', year: '산학', sub: 'FAF5 기반 운송비 예측 + LLM 설명', img: 'assets/img/fa-dashboard.webp', v: 'v-amber', tags: ['#Pandas', '#RandomForest', '#Optuna', '#LLM'], cat: 'data ml' },
-    { id: 'p-exaone', name: 'EXAONE Compression', year: '2026', sub: 'GPTQ × SparseGPT 온디바이스 경량화', img: 'assets/img/ex-quant.webp', v: 'v-violet', tags: ['#LLM', '#GPTQ', '#SparseGPT'], cat: 'llm ml' },
-    { id: 'p-agents', name: 'AI Dev Automation', year: '2026', sub: 'MCP 서버 + Agent SDK 에이전트 팀', img: 'assets/img/agents-thumb.svg', v: 'v-green', tags: ['#AgentSDK', '#MCP', '#ClaudeCode'], cat: 'agents llm' }
+    { id: 'p-streams', name: 'STREAMS AI', year: '캡스톤 → v17', sub: '데이터 누수를 찾아 다시 이긴 보드게임 AI', img: 'assets/img/st-curve.webp', v: 'v-blue', tags: ['#RL', '#SGAZ', '#재검증', '#Unity'], cat: 'ml data',
+      desc: '캡스톤에서 71.5점으로 우수상을 받은 에이전트를 재점검해 덱 정보 누수를 찾아냈습니다. 사람과 같은 정보로 다시 학습한 v17이 48.8점으로 사람(31.3)을 넘었습니다.' },
+    { id: 'p-faf5', name: 'Logistics Cost AI', year: '산학', sub: 'FAF5 기반 운송비 예측 + LLM 설명', img: 'assets/img/fa-dashboard.webp', v: 'v-amber', tags: ['#Pandas', '#RandomForest', '#Optuna', '#LLM'], cat: 'data ml',
+      desc: 'FAF5 화물 통계에 유가·거시경제·인구 이동 데이터를 결합해 운송비를 예측했습니다. RandomForest가 ±10% 이내 예측 70.3%를 기록했고, LLM이 절감 대안을 설명합니다.' },
+    { id: 'p-exaone', name: 'EXAONE Compression', year: '2026', sub: 'GPTQ × SparseGPT 온디바이스 경량화', img: 'assets/img/ex-quant.webp', v: 'v-violet', tags: ['#LLM', '#GPTQ', '#SparseGPT'], cat: 'llm ml',
+      desc: 'EXAONE 4.0 1.2B를 모바일용으로 경량화했습니다. SparseGPT로 구조를 먼저 확정하고 GPTQ W4A16이 남은 오차를 재분배하도록 순서를 설계했습니다.' },
+    { id: 'p-agents', name: 'AI Dev Automation', year: '2026', sub: 'MCP 서버 + Agent SDK 에이전트 팀', img: 'assets/img/agents-thumb.svg', v: 'v-green', tags: ['#AgentSDK', '#MCP', '#ClaudeCode'], cat: 'agents llm',
+      desc: 'MCP 서버 23개와 Agent SDK 에이전트 팀 4개를 묶어 기획 → 구현 → QA 보고서까지 이어지는 개발 환경을 만들어 운영하고 있습니다.' }
   ];
+  const inCat = (p, f) => f === 'all' || p.cat.split(' ').includes(f);
   const gridView = $('#gridView');
   gridView.innerHTML = projects.map((p, i) => `
     <article class="g-card" data-cat="${p.cat}">
@@ -215,14 +303,32 @@
   /* deck */
   const deck = $('#deck'), dots = $('#deckDots');
   let order = projects.map((_, i) => i);
+  const FLIP_ICON = '<svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 14.3-4.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 14a8 8 0 0 1-14.3 4.3L4 16"/><path d="M4 21v-5h5"/></svg>';
   deck.innerHTML = projects.map((p, i) => `
-    <div class="d-card ${p.v}" data-i="${i}">
-      <span class="d-num">0${i + 1} / 0${projects.length}</span>
-      <img src="${p.img}" alt="" draggable="false">
-      <div class="d-meta"><div><b>${p.name}</b><br><small>${p.sub}</small></div><small>${p.year}</small></div>
+    <div class="d-card" data-i="${i}">
+      <div class="d-flip">
+        <div class="d-face d-front ${p.v}">
+          <div class="d-main">
+            <img src="${p.img}" alt="" draggable="false">
+            <div class="d-meta"><div><span class="d-num">0${i + 1} / 0${projects.length}</span><b>${p.name}</b></div><small>${p.year}</small></div>
+          </div>
+          <div class="d-bar"><span>Front · 눌러서 뒤집기</span><button class="d-flipbtn" type="button">${FLIP_ICON}Flip</button></div>
+        </div>
+        <div class="d-face d-back">
+          <div class="d-main">
+            <span class="d-num">0${i + 1} / 0${projects.length} · ${p.year}</span>
+            <h5>${p.name}</h5>
+            <p>${p.desc}</p>
+            <div class="g-tags">${p.tags.map(t => '<span>' + t + '</span>').join('')}</div>
+            <div class="d-links"><a class="view-btn" href="#${p.id}" data-goto="${p.id}">View project ↗</a></div>
+          </div>
+          <div class="d-bar"><span>Back · 눌러서 뒤집기</span><button class="d-flipbtn" type="button">${FLIP_ICON}Flip</button></div>
+        </div>
+      </div>
     </div>`).join('');
   dots.innerHTML = projects.map(() => '<i></i>').join('');
   const dCards = $$('.d-card', deck);
+  const flip = c => c.classList.toggle('flipped');
   function layoutDeck() {
     order.forEach((idx, pos) => {
       const c = dCards[idx];
@@ -235,16 +341,21 @@
   }
   const nextCard = dir => {
     if (dir > 0) order.push(order.shift()); else order.unshift(order.pop());
+    dCards.forEach(c => c.classList.remove('flipped'));
     layoutDeck();
   };
   $('#deckNext').onclick = () => nextCard(1);
   $('#deckPrev').onclick = () => nextCard(-1);
   layoutDeck();
-  // drag top card aside
+  deck.addEventListener('click', e => {
+    const b = e.target.closest('.d-flipbtn');
+    if (b) flip(b.closest('.d-card'));
+  });
+  // drag top card aside (throw = next card, tap = flip)
   let drag = null;
   deck.addEventListener('pointerdown', e => {
     const c = e.target.closest('.d-card');
-    if (!c || +c.dataset.i !== order[0]) return;
+    if (!c || +c.dataset.i !== order[0] || e.target.closest('a, button')) return;
     drag = { c, x: e.clientX, dx: 0 };
     c.setPointerCapture(e.pointerId);
     c.style.transition = 'none';
@@ -261,9 +372,10 @@
     if (Math.abs(dx) > 90) {
       c.style.transform = `translateX(${Math.sign(dx) * 520}px) rotate(${Math.sign(dx) * 20}deg)`;
       setTimeout(() => nextCard(1), 220);
-    } else if (Math.abs(dx) < 4) {
-      nextCard(1);
-    } else layoutDeck();
+    } else {
+      if (Math.abs(dx) < 4) flip(c);
+      layoutDeck();
+    }
   };
   deck.addEventListener('pointerup', endDrag);
   deck.addEventListener('pointercancel', endDrag);
@@ -277,25 +389,38 @@
     gridView.hidden = v !== 'grid';
     deckView.hidden = v !== 'deck';
   }));
-  gridView.addEventListener('click', e => {
+  [gridView, deck].forEach(host => host.addEventListener('click', e => {
     const a = e.target.closest('[data-goto]');
     if (!a) return;
     e.preventDefault();
     $$('#viewBtns .view')[0].click();
     requestAnimationFrame(() => document.getElementById(a.dataset.goto).scrollIntoView({ behavior: 'smooth' }));
-  });
+  }));
 
-  /* filters */
+  /* filters: counts on chips, thumbnail stack, blur-out -> swap -> blur-in */
+  const faces = $('#faces');
+  const renderFaces = f => {
+    faces.innerHTML = projects.filter(p => inCat(p, f)).map(p => '<img src="' + p.img + '" alt="">').join('');
+  };
+  $$('#filterChips .chip').forEach(b => { $('sup', b).textContent = projects.filter(p => inCat(p, b.dataset.f)).length; });
+  renderFaces('all');
+  let swapT = 0;
   $$('#filterChips .chip').forEach(b => b.addEventListener('click', () => {
     $$('#filterChips .chip').forEach(x => x.classList.toggle('is-on', x === b));
     const f = b.dataset.f;
-    let n = 0;
-    $$('.case, .g-card').forEach(el => {
-      const ok = f === 'all' || el.dataset.cat.split(' ').includes(f);
-      el.classList.toggle('is-hidden', !ok);
-      if (ok && el.classList.contains('case')) n++;
-    });
-    $('#projCount').textContent = n;
+    [showcase, gridView].forEach(el => el.classList.add('is-swapping'));
+    clearTimeout(swapT);
+    swapT = setTimeout(() => {
+      let n = 0;
+      $$('.case, .g-card').forEach(el => {
+        const ok = f === 'all' || el.dataset.cat.split(' ').includes(f);
+        el.classList.toggle('is-hidden', !ok);
+        if (ok && el.classList.contains('case')) n++;
+      });
+      $('#projCount').textContent = n;
+      renderFaces(f);
+      [showcase, gridView].forEach(el => el.classList.remove('is-swapping'));
+    }, reduce ? 0 : 260);
   }));
 
   /* ---------- terminal typing (agents case + experiments) ---------- */

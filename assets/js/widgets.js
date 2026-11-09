@@ -12,6 +12,13 @@
     ob.observe(el);
   };
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const replays = {}; // widget name -> restart function, wired to the ↻ buttons at the bottom
+  // snap bar fills back to zero without animating, so the next fill animates from empty
+  const resetFills = (rows, label) => rows.forEach(r => {
+    const f = r.querySelector('.fill');
+    f.style.transition = 'none'; f.style.width = '0'; f.offsetWidth; f.style.transition = '';
+    r.querySelector('b').textContent = label;
+  });
 
   /* ---------- receipt ---------- */
   const rc = $('#rcpt'), rb = $('#rcptBtn'), rs = $('#rcptState');
@@ -27,6 +34,9 @@
     }
   });
   onVisible(rc.parentElement, () => setTimeout(() => rState === 0 && rb.click(), 500));
+  replays.receipt = () => {
+    if (rState === 1) { rb.click(); setTimeout(() => rb.click(), 760); } else rb.click();
+  };
 
   /* ---------- gauge (compression stages) ---------- */
   const stages = [
@@ -55,6 +65,11 @@
   }
   gb.addEventListener('click', () => { gi = (gi + 1) % stages.length; setGauge(gi); });
   setGauge(0);
+  let gaugeTs = [];
+  replays.gauge = () => {
+    gaugeTs.forEach(clearTimeout);
+    gaugeTs = stages.map((_, k) => setTimeout(() => { gi = k; setGauge(k); }, k * 1400));
+  };
 
   /* ---------- embedding sphere ---------- */
   (function sphere() {
@@ -116,13 +131,15 @@
     host.innerHTML = data.map(d => `<div class="bar-row ${d[2]}"><span>${d[0]}</span><div class="track"><div class="fill"></div></div><b>0</b></div>`).join('') +
       `<i class="human-line" style="--x:${(HUMAN / MAX * 100).toFixed(2)}%"><em>사람 ${HUMAN}</em></i>`;
     const rows = host.querySelectorAll('.bar-row');
-    onVisible(host, () => rows.forEach((r, i) => setTimeout(() => {
+    const run = () => rows.forEach((r, i) => setTimeout(() => {
       const v = data[i][1];
       r.querySelector('.fill').style.width = (v / MAX * 100) + '%';
       const el = r.querySelector('b'), t0 = performance.now();
       const step = t => { const p = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - p, 3); el.textContent = (v * e).toFixed(1); if (p < 1) requestAnimationFrame(step); };
       requestAnimationFrame(step);
-    }, i * 120)));
+    }, i * 120));
+    onVisible(host, run);
+    replays.score = () => { resetFills(rows, '0'); run(); };
   })();
 
   /* ---------- model bars ---------- */
@@ -140,6 +157,7 @@
       requestAnimationFrame(step);
     });
     onVisible(host, render);
+    replays.bars = () => { resetFills(rows, '0%'); render(); };
     document.querySelectorAll('#barSeg button').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('#barSeg button').forEach(x => x.classList.toggle('is-on', x === btn));
       key = btn.dataset.k === '10' ? 1 : 2; render();
@@ -168,7 +186,7 @@
       return { left, span };
     };
     let geo = layout(); addEventListener('resize', () => { geo = layout(); });
-    let start = null, running = false;
+    let start = null, running = false, rafId = 0, pauseT = 0;
     function frame(t) {
       if (!running) return;
       if (start === null) start = t;
@@ -180,15 +198,20 @@
         const live = Array.from(r.querySelectorAll('.g-seg')).some(s => sec >= +s.dataset.s && sec <= +s.dataset.e);
         r.classList.toggle('live', live);
       });
-      if (sec >= T) { setTimeout(() => { start = null; segs.forEach(s => s.classList.remove('on')); requestAnimationFrame(frame); }, 2600); return; }
-      requestAnimationFrame(frame);
+      if (sec >= T) { pauseT = setTimeout(() => { start = null; segs.forEach(s => s.classList.remove('on')); rafId = requestAnimationFrame(frame); }, 2600); return; }
+      rafId = requestAnimationFrame(frame);
     }
     const ob = new IntersectionObserver(e => {
       const v = e[0].isIntersecting;
-      if (v && !running) { running = true; start = null; requestAnimationFrame(frame); }
+      if (v && !running) { running = true; start = null; rafId = requestAnimationFrame(frame); }
       if (!v) running = false;
     }, { threshold: 0.3 });
     ob.observe(host);
+    replays.gantt = () => {
+      clearTimeout(pauseT); cancelAnimationFrame(rafId);
+      start = null; segs.forEach(s => s.classList.remove('on'));
+      if (running) rafId = requestAnimationFrame(frame);
+    };
   })();
 
   /* ---------- experiments orbit ---------- */
@@ -221,4 +244,9 @@
     }
     requestAnimationFrame(draw);
   })();
+
+  document.querySelectorAll('.w-replay').forEach(b => b.addEventListener('click', () => {
+    const f = replays[b.dataset.replay];
+    if (f) f();
+  }));
 })();
