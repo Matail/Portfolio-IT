@@ -476,7 +476,7 @@ section { position: relative; }
 .faces img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #fff; border: 2px solid var(--bg); margin-left: -9px; animation: faceIn .45s var(--ease) both; }
 .faces img:first-child { margin-left: 0; }
 @keyframes faceIn { from { opacity: 0; transform: scale(.6); } }
-.showcase, .grid-view { transition: opacity .26s, filter .26s; }
+.showcase, .grid-view, .deck-view { transition: opacity .26s, filter .26s; }
 .is-swapping { opacity: 0; filter: blur(8px); }
 
 .case { padding: 120px 0 40px; }
@@ -764,7 +764,7 @@ section { position: relative; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } /* one pass: infinite loops would otherwise flicker */
   html { scroll-behavior: auto; }
   .hand .hw { animation: none !important; clip-path: none; } /* no staggered delays: show the quote at once */
 }

@@ -332,9 +332,11 @@
     </div>`).join('');
   dots.innerHTML = projects.map(() => '<i></i>').join('');
   const dCards = $$('.d-card', deck);
+  const flying = new Set(); // thrown cards finish their exit before rejoining the stack
   function layoutDeck() {
     order.forEach((idx, pos) => {
       const c = dCards[idx];
+      if (flying.has(c)) return;
       c.style.zIndex = 10 - pos;
       c.style.transform = `translateY(${pos * -18}px) scale(${1 - pos * 0.05}) rotate(${pos % 2 ? 2 : -2 * (pos > 0)}deg)`;
       c.style.filter = pos ? `brightness(${1 - pos * 0.15})` : '';
@@ -352,7 +354,7 @@
   const flip = c => { c.classList.toggle('flipped'); layoutDeck(); };
   const nextCard = dir => {
     if (dir > 0) order.push(order.shift()); else order.unshift(order.pop());
-    dCards.forEach(c => c.classList.remove('flipped'));
+    dCards.forEach(c => flying.has(c) || c.classList.remove('flipped'));
     layoutDeck();
   };
   $('#deckNext').onclick = () => nextCard(1);
@@ -385,7 +387,13 @@
     c.style.transition = '';
     if (Math.abs(dx) > 90) {
       c.style.transform = `translateX(${Math.sign(dx) * 520}px) rotate(${Math.sign(dx) * 20}deg)`;
-      setTimeout(() => nextCard(1), 220);
+      flying.add(c);
+      nextCard(1); // the rest of the deck moves up now
+      setTimeout(() => { // once off-screen, snap the thrown card to the back without animating
+        flying.delete(c);
+        c.classList.remove('flipped');
+        c.style.transition = 'none'; layoutDeck(); c.offsetWidth; c.style.transition = '';
+      }, 600);
     } else if (Math.abs(dx) < 4) flip(c);
     else layoutDeck();
   };
@@ -415,8 +423,9 @@
   };
   $$('#filterChips .chip').forEach(b => { $('sup', b).textContent = projects.filter(p => inCat(p, b.dataset.f)).length; });
   renderFaces('all');
-  let swapT = 0;
+  let swapT = 0, activeF = 'all', pendingF = null; // pendingF: chosen but still inside the 260 ms blur
   const applyFilter = f => {
+    activeF = f; pendingF = null;
     $$('#filterChips .chip').forEach(x => x.classList.toggle('is-on', x.dataset.f === f));
     let n = 0;
     $$('.case, .g-card').forEach(el => {
@@ -431,18 +440,20 @@
     dCards.forEach((c, i) => { c.classList.toggle('is-hidden', !order.includes(i)); c.classList.remove('flipped'); });
     $$('i', dots).forEach((d, i) => d.classList.toggle('is-hidden', !order.includes(i)));
     layoutDeck();
-    [showcase, gridView].forEach(el => el.classList.remove('is-swapping'));
+    [showcase, gridView, deckView].forEach(el => el.classList.remove('is-swapping'));
   };
   $$('#filterChips .chip').forEach(b => b.addEventListener('click', () => {
     $$('#filterChips .chip').forEach(x => x.classList.toggle('is-on', x === b));
-    [showcase, gridView].forEach(el => el.classList.add('is-swapping'));
+    [showcase, gridView, deckView].forEach(el => el.classList.add('is-swapping'));
     clearTimeout(swapT);
+    pendingF = b.dataset.f;
     swapT = setTimeout(() => applyFilter(b.dataset.f), reduce ? 0 : 260);
   }));
   // jump to a project from a menu / grid / deck link, clearing a filter that hides it
   const showProject = id => {
-    const el = document.getElementById(id);
-    if (el.classList.contains('is-hidden')) { clearTimeout(swapT); applyFilter('all'); }
+    const el = document.getElementById(id), p = projects.find(x => x.id === id);
+    const f = pendingF || activeF; // a filter picked a moment ago counts as applied
+    if (pendingF || !inCat(p, f)) { clearTimeout(swapT); applyFilter(inCat(p, f) ? f : 'all'); }
     $$('#viewBtns .view')[0].click();
     requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth' }));
   };

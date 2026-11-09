@@ -23,9 +23,9 @@
   /* ---------- receipt ---------- */
   const rc = $('#rcpt'), rb = $('#rcptBtn'), rs = $('#rcptState');
   let rState = 0; // 0 hidden, 1 printed
-  let doneT = 0, tearT = 0, replayT = 0; // pending callbacks; any newer click cancels them
+  let doneT = 0, tearT = 0, replayT = 0, autoT = 0; // pending callbacks; any newer click cancels them
   rb.addEventListener('click', () => {
-    clearTimeout(doneT); clearTimeout(tearT); clearTimeout(replayT);
+    clearTimeout(doneT); clearTimeout(tearT); clearTimeout(replayT); clearTimeout(autoT);
     if (rState === 0) {
       rc.classList.remove('tear'); rc.classList.add('printed');
       rs.textContent = 'Printing…'; rb.textContent = 'Tear off'; rState = 1;
@@ -35,7 +35,7 @@
       tearT = setTimeout(() => { rc.style.transition = 'none'; rc.classList.remove('printed', 'tear'); rc.offsetWidth; rc.style.transition = ''; }, 700);
     }
   });
-  onVisible(rc.parentElement, () => setTimeout(() => rState === 0 && rb.click(), 500));
+  onVisible(rc.parentElement, () => { autoT = setTimeout(() => rState === 0 && rb.click(), 500); });
   replays.receipt = () => {
     if (rState === 1) { rb.click(); replayT = setTimeout(() => rb.click(), 760); } else rb.click();
   };
