@@ -82,9 +82,17 @@
   const renderTitle = i => {
     let n = 0;
     titleEl.setAttribute('aria-label', titles[i].join(' '));
-    titleEl.innerHTML = titles[i].map(w => '<span class="tw" aria-hidden="true">' +
-      Array.from(w).map(c => '<span class="ch" style="--i:' + (n++) + '">' + (c === ' ' ? '&nbsp;' : c) + '</span>').join('') +
-      '</span>').join('');
+    titleEl.replaceChildren(...titles[i].map(w => {
+      const tw = document.createElement('span');
+      tw.className = 'tw'; tw.setAttribute('aria-hidden', 'true');
+      for (const c of w) {
+        const ch = document.createElement('span');
+        ch.className = 'ch'; ch.style.setProperty('--i', n++);
+        ch.textContent = c === ' ' ? ' ' : c;
+        tw.appendChild(ch);
+      }
+      return tw;
+    }));
   };
   const goHero = i => {
     titleEl.classList.add('out');
@@ -307,29 +315,24 @@
   /* deck */
   const deck = $('#deck'), dots = $('#deckDots');
   let order = projects.map((_, i) => i);
-  const FLIP_ICON = '<svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 14.3-4.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 14a8 8 0 0 1-14.3 4.3L4 16"/><path d="M4 21v-5h5"/></svg>';
-  deck.innerHTML = projects.map((p, i) => `
-    <div class="d-card" data-i="${i}">
-      <div class="d-flip">
-        <div class="d-face d-front ${p.v}">
-          <div class="d-main">
-            <img src="${p.img}" alt="" draggable="false">
-            <div class="d-meta"><div><span class="d-num">0${i + 1} / 0${projects.length}</span><b>${p.name}</b></div><small>${p.year}</small></div>
-          </div>
-          <div class="d-bar"><span>Front · 눌러서 뒤집기</span><button class="d-flipbtn" type="button">${FLIP_ICON}Flip</button></div>
-        </div>
-        <div class="d-face d-back">
-          <div class="d-main">
-            <span class="d-num">0${i + 1} / 0${projects.length} · ${p.year}</span>
-            <h5>${p.name}</h5>
-            <p>${p.desc}</p>
-            <div class="g-tags">${p.tags.map(t => '<span>' + t + '</span>').join('')}</div>
-            <div class="d-links"><a class="view-btn" href="#${p.id}" data-goto="${p.id}">View project ↗</a></div>
-          </div>
-          <div class="d-bar"><span>Back · 눌러서 뒤집기</span><button class="d-flipbtn" type="button">${FLIP_ICON}Flip</button></div>
-        </div>
-      </div>
-    </div>`).join('');
+  // card markup lives in <template id="deckCardTpl">; project data goes in as text, not HTML
+  const cardTpl = $('#deckCardTpl').content.firstElementChild;
+  deck.replaceChildren(...projects.map((p, i) => {
+    const c = cardTpl.cloneNode(true), num = '0' + (i + 1) + ' / 0' + projects.length;
+    c.dataset.i = i;
+    $('.d-front', c).classList.add(p.v);
+    $('.d-front img', c).src = p.img;
+    $('.d-front .d-num', c).textContent = num;
+    $('.d-front b', c).textContent = p.name;
+    $('.d-front small', c).textContent = p.year;
+    $('.d-back .d-num', c).textContent = num + ' · ' + p.year;
+    $('.d-back h5', c).textContent = p.name;
+    $('.d-back p', c).textContent = p.desc;
+    $('.d-back .g-tags', c).replaceChildren(...p.tags.map(t => Object.assign(document.createElement('span'), { textContent: t })));
+    const a = $('.d-back .view-btn', c);
+    a.href = '#' + p.id; a.dataset.goto = p.id;
+    return c;
+  }));
   dots.innerHTML = projects.map(() => '<i></i>').join('');
   const dCards = $$('.d-card', deck);
   const flying = new Set(); // thrown cards finish their exit before rejoining the stack
@@ -419,7 +422,7 @@
   /* filters: counts on chips, thumbnail stack, blur-out -> swap -> blur-in */
   const faces = $('#faces');
   const renderFaces = f => {
-    faces.innerHTML = projects.filter(p => inCat(p, f)).map(p => '<img src="' + p.img + '" alt="">').join('');
+    faces.replaceChildren(...projects.filter(p => inCat(p, f)).map(p => Object.assign(new Image(), { src: p.img, alt: '' })));
   };
   $$('#filterChips .chip').forEach(b => { $('sup', b).textContent = projects.filter(p => inCat(p, b.dataset.f)).length; });
   renderFaces('all');

@@ -416,6 +416,29 @@
       <!-- deck -->
       <div class="deck-view" id="deckView" hidden>
         <div class="deck" id="deck"></div>
+        <template id="deckCardTpl">
+          <div class="d-card">
+            <div class="d-flip">
+              <div class="d-face d-front">
+                <div class="d-main">
+                  <img alt="" draggable="false" />
+                  <div class="d-meta"><div><span class="d-num"></span><b></b></div><small></small></div>
+                </div>
+                <div class="d-bar"><span>Front · 눌러서 뒤집기</span><button class="d-flipbtn" type="button"><svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 14.3-4.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 14a8 8 0 0 1-14.3 4.3L4 16"/><path d="M4 21v-5h5"/></svg>Flip</button></div>
+              </div>
+              <div class="d-face d-back">
+                <div class="d-main">
+                  <span class="d-num"></span>
+                  <h5></h5>
+                  <p></p>
+                  <div class="g-tags"></div>
+                  <div class="d-links"><a class="view-btn">View project ↗</a></div>
+                </div>
+                <div class="d-bar"><span>Back · 눌러서 뒤집기</span><button class="d-flipbtn" type="button"><svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 0 1 14.3-4.3L20 8"/><path d="M20 3v5h-5"/><path d="M20 14a8 8 0 0 1-14.3 4.3L4 16"/><path d="M4 21v-5h5"/></svg>Flip</button></div>
+              </div>
+            </div>
+          </div>
+        </template>
         <div class="deck-ctrl">
           <button class="round" id="deckPrev" aria-label="이전">‹</button>
           <div class="deck-dots" id="deckDots"></div>
