@@ -12,21 +12,33 @@
     ob.observe(el);
   };
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const replays = {}; // widget name -> restart function, wired to the ↻ buttons at the bottom
+  // snap bar fills back to zero without animating, so the next fill animates from empty
+  const resetFills = (rows, label) => rows.forEach(r => {
+    const f = r.querySelector('.fill');
+    f.style.transition = 'none'; f.style.width = '0'; f.offsetWidth; f.style.transition = '';
+    r.querySelector('b').textContent = label;
+  });
 
   /* ---------- receipt ---------- */
   const rc = $('#rcpt'), rb = $('#rcptBtn'), rs = $('#rcptState');
   let rState = 0; // 0 hidden, 1 printed
+  let doneT = 0, tearT = 0, replayT = 0, autoT = 0; // pending callbacks; any newer click cancels them
   rb.addEventListener('click', () => {
+    clearTimeout(doneT); clearTimeout(tearT); clearTimeout(replayT); clearTimeout(autoT);
     if (rState === 0) {
       rc.classList.remove('tear'); rc.classList.add('printed');
       rs.textContent = 'Printing…'; rb.textContent = 'Tear off'; rState = 1;
-      setTimeout(() => { if (rState === 1) rs.textContent = 'Done'; }, 1800);
+      doneT = setTimeout(() => { rs.textContent = 'Done'; }, 1800);
     } else {
       rc.classList.add('tear'); rs.textContent = 'Ready'; rb.textContent = 'Print report'; rState = 0;
-      setTimeout(() => { rc.style.transition = 'none'; rc.classList.remove('printed', 'tear'); rc.offsetWidth; rc.style.transition = ''; }, 700);
+      tearT = setTimeout(() => { rc.style.transition = 'none'; rc.classList.remove('printed', 'tear'); rc.offsetWidth; rc.style.transition = ''; }, 700);
     }
   });
-  onVisible(rc.parentElement, () => setTimeout(() => rState === 0 && rb.click(), 500));
+  onVisible(rc.parentElement, () => { autoT = setTimeout(() => rState === 0 && rb.click(), 500); });
+  replays.receipt = () => {
+    if (rState === 1) { rb.click(); replayT = setTimeout(() => rb.click(), 760); } else rb.click();
+  };
 
   /* ---------- gauge (compression stages) ---------- */
   const stages = [
@@ -34,9 +46,10 @@
     { pct: 65, stage: 'SparseGPT 35%', status: 'Pruned', hot: false },
     { pct: 16, stage: '+ GPTQ W4A16', status: 'Mobile-ready', hot: false }
   ];
-  let gi = 0;
+  let gi = 0, gaugeTs = [], gaugeRaf = 0;
   const g = $('#gauge'), gl = $('#gaugeLiquid'), gp = $('#gaugePct'), gs = $('#gaugeStage'), gst = $('#gaugeStatus'), gb = $('#gaugeBtn');
   function setGauge(i) {
+    cancelAnimationFrame(gaugeRaf); // one count-up at a time
     const s = stages[i];
     gl.style.height = s.pct + '%';
     g.classList.toggle('hot', s.hot);
@@ -49,12 +62,16 @@
     const step = t => {
       const p = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - p, 3);
       gp.textContent = Math.round(from + (to - from) * e) + '%';
-      if (p < 1) requestAnimationFrame(step);
+      if (p < 1) gaugeRaf = requestAnimationFrame(step);
     };
-    requestAnimationFrame(step);
+    gaugeRaf = requestAnimationFrame(step);
   }
-  gb.addEventListener('click', () => { gi = (gi + 1) % stages.length; setGauge(gi); });
+  gb.addEventListener('click', () => { gaugeTs.forEach(clearTimeout); gi = (gi + 1) % stages.length; setGauge(gi); });
   setGauge(0);
+  replays.gauge = () => {
+    gaugeTs.forEach(clearTimeout);
+    gaugeTs = stages.map((_, k) => setTimeout(() => { gi = k; setGauge(k); }, k * 1400));
+  };
 
   /* ---------- embedding sphere ---------- */
   (function sphere() {
@@ -116,13 +133,19 @@
     host.innerHTML = data.map(d => `<div class="bar-row ${d[2]}"><span>${d[0]}</span><div class="track"><div class="fill"></div></div><b>0</b></div>`).join('') +
       `<i class="human-line" style="--x:${(HUMAN / MAX * 100).toFixed(2)}%"><em>사람 ${HUMAN}</em></i>`;
     const rows = host.querySelectorAll('.bar-row');
-    onVisible(host, () => rows.forEach((r, i) => setTimeout(() => {
-      const v = data[i][1];
-      r.querySelector('.fill').style.width = (v / MAX * 100) + '%';
-      const el = r.querySelector('b'), t0 = performance.now();
-      const step = t => { const p = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - p, 3); el.textContent = (v * e).toFixed(1); if (p < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    }, i * 120)));
+    let timers = [], rafs = [];
+    const run = () => {
+      timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); // drop a run still in flight
+      timers = Array.from(rows, (r, i) => setTimeout(() => {
+        const v = data[i][1];
+        r.querySelector('.fill').style.width = (v / MAX * 100) + '%';
+        const el = r.querySelector('b'), t0 = performance.now();
+        const step = t => { const p = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - p, 3); el.textContent = (v * e).toFixed(1); if (p < 1) rafs[i] = requestAnimationFrame(step); };
+        rafs[i] = requestAnimationFrame(step);
+      }, i * 120));
+    };
+    onVisible(host, run);
+    replays.score = () => { resetFills(rows, '0'); run(); };
   })();
 
   /* ---------- model bars ---------- */
@@ -131,15 +154,17 @@
     const data = [['RandomForest', 70.3, 98.2], ['XGBoost', 52.2, 84.0], ['LightGBM', 20.2, 78.3], ['CatBoost', 4.6, 13.2]];
     host.innerHTML = data.map((d, i) => `<div class="bar-row${i === 0 ? ' best' : ''}"><span>${d[0]}</span><div class="track"><div class="fill"></div></div><b>0%</b></div>`).join('');
     const rows = host.querySelectorAll('.bar-row');
-    let key = 1;
+    let key = 1, rafs = [];
     const render = () => rows.forEach((r, i) => {
+      cancelAnimationFrame(rafs[i]); // restart this row's count from whatever it shows now
       const v = data[i][key];
       r.querySelector('.fill').style.width = v + '%';
       const b = r.querySelector('b'), from = parseFloat(b.textContent) || 0, t0 = performance.now();
-      const step = t => { const p = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - p, 3); b.textContent = (from + (v - from) * e).toFixed(1) + '%'; if (p < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
+      const step = t => { const p = Math.min(1, (t - t0) / 1000), e = 1 - Math.pow(1 - p, 3); b.textContent = (from + (v - from) * e).toFixed(1) + '%'; if (p < 1) rafs[i] = requestAnimationFrame(step); };
+      rafs[i] = requestAnimationFrame(step);
     });
     onVisible(host, render);
+    replays.bars = () => { resetFills(rows, '0%'); render(); };
     document.querySelectorAll('#barSeg button').forEach(btn => btn.addEventListener('click', () => {
       document.querySelectorAll('#barSeg button').forEach(x => x.classList.toggle('is-on', x === btn));
       key = btn.dataset.k === '10' ? 1 : 2; render();
@@ -168,7 +193,7 @@
       return { left, span };
     };
     let geo = layout(); addEventListener('resize', () => { geo = layout(); });
-    let start = null, running = false;
+    let start = null, running = false, rafId = 0, pauseT = 0;
     function frame(t) {
       if (!running) return;
       if (start === null) start = t;
@@ -180,15 +205,22 @@
         const live = Array.from(r.querySelectorAll('.g-seg')).some(s => sec >= +s.dataset.s && sec <= +s.dataset.e);
         r.classList.toggle('live', live);
       });
-      if (sec >= T) { setTimeout(() => { start = null; segs.forEach(s => s.classList.remove('on')); requestAnimationFrame(frame); }, 2600); return; }
-      requestAnimationFrame(frame);
+      if (sec >= T) { pauseT = setTimeout(() => { start = null; segs.forEach(s => s.classList.remove('on')); rafId = requestAnimationFrame(frame); }, 2600); return; }
+      rafId = requestAnimationFrame(frame);
     }
+    // single entry point: cancel any pending pause/frame before (re)starting, so only one loop ever runs
+    const restart = () => {
+      clearTimeout(pauseT); cancelAnimationFrame(rafId);
+      start = null; segs.forEach(s => s.classList.remove('on'));
+      if (running) rafId = requestAnimationFrame(frame);
+    };
     const ob = new IntersectionObserver(e => {
       const v = e[0].isIntersecting;
-      if (v && !running) { running = true; start = null; requestAnimationFrame(frame); }
-      if (!v) running = false;
+      if (v && !running) { running = true; restart(); }
+      if (!v) { running = false; clearTimeout(pauseT); cancelAnimationFrame(rafId); }
     }, { threshold: 0.3 });
     ob.observe(host);
+    replays.gantt = restart;
   })();
 
   /* ---------- experiments orbit ---------- */
@@ -221,4 +253,9 @@
     }
     requestAnimationFrame(draw);
   })();
+
+  document.querySelectorAll('.w-replay').forEach(b => b.addEventListener('click', () => {
+    const f = replays[b.dataset.replay];
+    if (f) f();
+  }));
 })();
