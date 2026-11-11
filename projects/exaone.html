@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EXAONE 경량화 — 박원찬</title>
+  <meta name="description" content="GPTQ와 SparseGPT를 겹쳐 EXAONE 4.0 1.2B를 모바일용으로 경량화한 LG AIMERS 8기 해커톤." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27 fill=%27%23111%27 stroke=%27%23fff%27 stroke-width=%272%27/%3E%3Cpath d=%27M12 2a10 10 0 0 1 0 20z%27 fill=%27%23fff%27/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&family=Smooch+Sans:wght@100..900&display=swap" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+  <canvas class="bg-stars" id="stars" aria-hidden="true"></canvas>
+  <header class="dock" id="nav">
+    <div class="dock-cap">
+      <a class="dock-logo" href="../index.html">wonchan</a>
+      <nav class="fold dock-links" aria-label="프로젝트">
+        <a href="streams.html">streams</a>
+        <a href="logistics.html">logistics</a>
+        <a href="exaone.html" class="is-active" aria-current="page">exaone</a>
+      </nav>
+      <div class="fold fold-menu"><button class="dock-menu" id="dockMenu" type="button" aria-expanded="false" aria-controls="dockSheet">menu <i class="burger" aria-hidden="true"></i></button></div>
+      <a class="dock-cta" href="mailto:pow01042@naver.com">contact ↗</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="테마 전환">
+        <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="dock-scrim" id="dockScrim" hidden></div>
+  <div class="dock-sheet" id="dockSheet" role="dialog" aria-modal="true" aria-label="메뉴" hidden>
+    <div class="sheet-top">
+      <a class="dock-logo" href="../index.html">wonchan</a>
+      <a class="dock-cta" href="mailto:pow01042@naver.com">contact ↗</a>
+      <button class="sheet-close" id="dockClose" type="button">close ✕</button>
+    </div>
+    <ol class="sheet-links">
+      <li style="--i:0"><a href="../index.html"><small>00</small><b>Index</b><span>메인</span></a></li>
+      <li style="--i:1"><a href="streams.html"><small>01</small><b>STREAMS</b><span>강화학습</span></a></li>
+      <li style="--i:2"><a href="logistics.html"><small>02</small><b>Logistics</b><span>데이터 예측</span></a></li>
+      <li style="--i:3"><a href="exaone.html" aria-current="page"><small>03</small><b>EXAONE</b><span>LLM 경량화</span></a></li>
+    </ol>
+    <div class="sheet-foot"><span>wonchan · AI Engineer</span><nav><a href="https://github.com/Matail" target="_blank" rel="noopener">github ↗</a><a href="https://matail.party" target="_blank" rel="noopener">matail.party ↗</a></nav></div>
+  </div>
+
+  <main class="cs">
+    <header class="cs-hero" data-hero style="--c1:#8b5cf6;--c2:#ec4899;--c3:#170c2a">
+      <div class="cs-hero-in">
+        <p class="cs-kicker">exp/03 · LLM 경량화</p>
+        <h1>EXAONE 경량화</h1>
+        <p class="cs-tag">성능은 지키고, 코스트는 줄여라.</p>
+      </div>
+    </header>
+
+    <div class="cs-strip" aria-label="자료">
+      <div class="cs-track">
+          <figure><img src="../assets/img/ex-prune.webp" alt="프루닝 · 남길 연결을 고르는 축" loading="lazy" /><figcaption>프루닝 · 남길 연결을 고르는 축</figcaption></figure>
+          <figure><img src="../assets/img/ex-quant.webp" alt="양자화 · 비트 수를 줄이는 축" loading="lazy" /><figcaption>양자화 · 비트 수를 줄이는 축</figcaption></figure>
+          <figure><img src="../assets/img/ex-benchmark.webp" alt="지켜야 할 기준 · EXAONE 4.0 벤치마크" loading="lazy" /><figcaption>지켜야 할 기준 · EXAONE 4.0 벤치마크</figcaption></figure>
+          <figure><img src="../assets/img/ex-slm.webp" alt="LLM을 SLM으로 줄이는 경량화" loading="lazy" /><figcaption>LLM을 SLM으로 줄이는 경량화</figcaption></figure>
+          <figure><img src="../assets/img/ex-cert.webp" alt="LG AIMERS 8기 LLM 과정 수료" loading="lazy" /><figcaption>LG AIMERS 8기 LLM 과정 수료</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/ex-prune.webp" alt="" loading="lazy" /><figcaption>프루닝 · 남길 연결을 고르는 축</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/ex-quant.webp" alt="" loading="lazy" /><figcaption>양자화 · 비트 수를 줄이는 축</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/ex-benchmark.webp" alt="" loading="lazy" /><figcaption>지켜야 할 기준 · EXAONE 4.0 벤치마크</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/ex-slm.webp" alt="" loading="lazy" /><figcaption>LLM을 SLM으로 줄이는 경량화</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/ex-cert.webp" alt="" loading="lazy" /><figcaption>LG AIMERS 8기 LLM 과정 수료</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="cs-wrap">
+      <section class="cs-block cs-center reveal">
+        <p class="eyebrow">The problem</p>
+        <h2>4bit 양자화만으로는 압축률에 한계가 있었습니다.</h2>
+        <p>더 세게 밀어붙이면 품질이 급격히 떨어질 위험이 있었습니다.</p>
+      </section>
+
+      <section class="cs-block">
+        <div class="cs-center reveal">
+          <p class="eyebrow">The result</p>
+          <h2>프루닝과 양자화, 두 압축 축을 동시에 걸었습니다.</h2>
+        </div>
+        <figure class="chart reveal reveal-scale">
+          <figcaption><span>EXAONE 4.0 1.2B 가중치 메모리 · 이론치</span></figcaption>
+          <ul class="bars" data-max="100" data-unit="%" data-digits="0">
+            <li data-v="100">FP16 원본</li>
+            <li data-v="65">SparseGPT 35%</li>
+            <li data-v="16" class="best">+ GPTQ W4A16</li>
+          </ul>
+        </figure>
+      </section>
+
+      <section class="cs-split">
+        <div class="cs-sticky reveal reveal-left">
+          <p class="eyebrow">Process</p>
+          <h2>순서가 성능입니다.</h2>
+        </div>
+        <ol class="cs-steps">
+            <li class="reveal reveal-right" style="--d:0ms"><b>FP16 원본</b><span>EXAONE 4.0 1.2B에서 출발했습니다. GPTQ baseline은 LB 0.5±0.02.</span></li>
+            <li class="reveal reveal-right" style="--d:90ms"><b>SparseGPT로 구조 확정</b><span>sparsity 35%, 2:4 구조적 마스크로 남길 가중치를 먼저 골랐습니다.</span></li>
+            <li class="reveal reveal-right" style="--d:180ms"><b>GPTQ로 오차 재분배</b><span>확정된 구조 위에서 W4A16 양자화가 남은 오차를 나누도록 했습니다.</span></li>
+            <li class="reveal reveal-right" style="--d:270ms"><b>민감 레이어 살리기</b><span>baseline에서 뺐던 레이어를 다시 넣고 캘리브레이션을 강화했습니다.</span></li>
+        </ol>
+      </section>
+
+      <section class="cs-block cs-center reveal">
+        <p class="eyebrow">Learnings</p>
+        <h2>겹쳐 쓰는 압축에는 검증이 필요합니다.</h2>
+        <div class="cs-lessons">
+          <div><b>겹치면 ablation부터</b><p>A만, B만, A+B를 모두 비교해야 조합이 안전합니다.</p></div>
+          <div><b>레이어 민감도는 균일하지 않다</b><p>레이어마다 근거를 재고 압축 강도를 정해야 합니다.</p></div>
+        </div>
+        <div class="cs-links"><a href="../assets/img/ex-cert.webp" target="_blank" rel="noopener">수료증 ↗</a></div>
+      </section>
+    </div>
+
+    <a class="cs-next" href="streams.html"><small>UP NEXT</small><b>STREAMS 에이전트 →</b></a>
+  </main>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/charts.js"></script>
+  <script src="../assets/js/motion.js"></script>
+</body>
+</html>

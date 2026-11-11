@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>물류 운송비 예측 — 박원찬</title>
+  <meta name="description" content="FAF5 화물 통계와 외부 데이터를 결합한 운송비 예측과 LLM 비용 절감 설명 대시보드." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Ccircle cx=%2712%27 cy=%2712%27 r=%2710%27 fill=%27%23111%27 stroke=%27%23fff%27 stroke-width=%272%27/%3E%3Cpath d=%27M12 2a10 10 0 0 1 0 20z%27 fill=%27%23fff%27/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&family=Smooch+Sans:wght@100..900&display=swap" />
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+  <canvas class="bg-stars" id="stars" aria-hidden="true"></canvas>
+  <header class="dock" id="nav">
+    <div class="dock-cap">
+      <a class="dock-logo" href="../index.html">wonchan</a>
+      <nav class="fold dock-links" aria-label="프로젝트">
+        <a href="streams.html">streams</a>
+        <a href="logistics.html" class="is-active" aria-current="page">logistics</a>
+        <a href="exaone.html">exaone</a>
+      </nav>
+      <div class="fold fold-menu"><button class="dock-menu" id="dockMenu" type="button" aria-expanded="false" aria-controls="dockSheet">menu <i class="burger" aria-hidden="true"></i></button></div>
+      <a class="dock-cta" href="mailto:pow01042@naver.com">contact ↗</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="테마 전환">
+        <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </header>
+  <div class="dock-scrim" id="dockScrim" hidden></div>
+  <div class="dock-sheet" id="dockSheet" role="dialog" aria-modal="true" aria-label="메뉴" hidden>
+    <div class="sheet-top">
+      <a class="dock-logo" href="../index.html">wonchan</a>
+      <a class="dock-cta" href="mailto:pow01042@naver.com">contact ↗</a>
+      <button class="sheet-close" id="dockClose" type="button">close ✕</button>
+    </div>
+    <ol class="sheet-links">
+      <li style="--i:0"><a href="../index.html"><small>00</small><b>Index</b><span>메인</span></a></li>
+      <li style="--i:1"><a href="streams.html"><small>01</small><b>STREAMS</b><span>강화학습</span></a></li>
+      <li style="--i:2"><a href="logistics.html" aria-current="page"><small>02</small><b>Logistics</b><span>데이터 예측</span></a></li>
+      <li style="--i:3"><a href="exaone.html"><small>03</small><b>EXAONE</b><span>LLM 경량화</span></a></li>
+    </ol>
+    <div class="sheet-foot"><span>wonchan · AI Engineer</span><nav><a href="https://github.com/Matail" target="_blank" rel="noopener">github ↗</a><a href="https://matail.party" target="_blank" rel="noopener">matail.party ↗</a></nav></div>
+  </div>
+
+  <main class="cs">
+    <header class="cs-hero" data-hero style="--c1:#ff7a2f;--c2:#b5292b;--c3:#22100a">
+      <div class="cs-hero-in">
+        <p class="cs-kicker">exp/02 · 데이터 · 예측</p>
+        <h1>물류 운송비 예측</h1>
+        <p class="cs-tag">거리만으로는 설명되지 않는 운송비를, 데이터로.</p>
+      </div>
+    </header>
+
+    <div class="cs-strip" aria-label="자료">
+      <div class="cs-track">
+          <figure><img src="../assets/img/fa-dashboard.webp" alt="대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석" loading="lazy" /><figcaption>대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석</figcaption></figure>
+          <figure><img src="../assets/img/fa-accuracy.webp" alt="모델별 실용 정확도" loading="lazy" /><figcaption>모델별 실용 정확도</figcaption></figure>
+          <figure><img src="../assets/img/fa-rmse.webp" alt="품목·거리·출발 지역별 오차 분해" loading="lazy" /><figcaption>품목·거리·출발 지역별 오차 분해</figcaption></figure>
+          <figure><img src="../assets/img/fa-title.webp" alt="산학 과제 개요" loading="lazy" /><figcaption>산학 과제 개요</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/fa-dashboard.webp" alt="" loading="lazy" /><figcaption>대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/fa-accuracy.webp" alt="" loading="lazy" /><figcaption>모델별 실용 정확도</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/fa-rmse.webp" alt="" loading="lazy" /><figcaption>품목·거리·출발 지역별 오차 분해</figcaption></figure>
+          <figure aria-hidden="true"><img src="../assets/img/fa-title.webp" alt="" loading="lazy" /><figcaption>산학 과제 개요</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="cs-wrap">
+      <section class="cs-block cs-center reveal">
+        <p class="eyebrow">The problem</p>
+        <h2>같은 거리라도 품목·유가·경기에 따라 비용이 달라집니다.</h2>
+        <p>단순 거리 기반 추천은 실제 운송비와 물류 흐름을 반영하지 못했습니다.</p>
+      </section>
+
+      <section class="cs-block">
+        <div class="cs-center reveal">
+          <p class="eyebrow">The result</p>
+          <h2>RandomForest가 ±10% 이내 70.3%로 가장 실용적이었습니다.</h2>
+        </div>
+        <figure class="chart reveal reveal-scale">
+          <figcaption><span>오차 이내 예측 비율 · 원 스케일 cost_proxy</span>
+            <span class="seg" data-for="lgBars"><button class="is-on" data-key="v">±10%</button><button data-key="v2">±20%</button></span></figcaption>
+          <ul class="bars" id="lgBars" data-max="100" data-unit="%">
+            <li data-v="70.3" data-v2="98.2" class="best">RandomForest</li>
+            <li data-v="52.2" data-v2="84.0">XGBoost</li>
+            <li data-v="20.2" data-v2="78.3">LightGBM</li>
+            <li data-v="4.6" data-v2="13.2">CatBoost</li>
+          </ul>
+        </figure>
+      </section>
+
+      <section class="cs-split">
+        <div class="cs-sticky reveal reveal-left">
+          <p class="eyebrow">Process</p>
+          <h2>흩어진 데이터를 하나의 학습 가능한 형태로.</h2>
+        </div>
+        <ol class="cs-steps">
+            <li class="reveal reveal-right" style="--d:0ms"><b>FAF5 + 외부 데이터</b><span>품목·거리·물동량에 유가, 거시경제, 인구 이동을 한 행으로 결합했습니다.</span></li>
+            <li class="reveal reveal-right" style="--d:90ms"><b>조합 단위 재구성</b><span>연도 × 출발·도착 × 품목 × 거리 단위로 2017–22년 데이터를 다시 묶었습니다.</span></li>
+            <li class="reveal reveal-right" style="--d:180ms"><b>VIF로 중복 제거</b><span>정보가 겹치는 Feature를 다중공선성 검사로 걸러냈습니다.</span></li>
+            <li class="reveal reveal-right" style="--d:270ms"><b>Optuna × 4 → LLM</b><span>4개 모델을 튜닝해 RF를 고르고, llama-3.3-70b가 절감 대안을 설명합니다.</span></li>
+        </ol>
+      </section>
+
+      <section class="cs-block cs-center reveal">
+        <p class="eyebrow">Learnings</p>
+        <h2>큰 데이터와 작은 팀이 가르쳐 준 것.</h2>
+        <div class="cs-lessons">
+          <div><b>메모리도 분석이다</b><p>큰 데이터에서는 메모리 관리가 분석만큼 중요했습니다.</p></div>
+          <div><b>예시로 소통한다</b><p>말로 어긋날 때는 예시 결과물을 먼저 보여주는 것이 가장 빨랐습니다.</p></div>
+        </div>
+        <div class="cs-links"><a href="https://github.com/NOMADATASCIENCE/FAF5_Features/tree/develop" target="_blank" rel="noopener">github ↗</a></div>
+      </section>
+    </div>
+
+    <a class="cs-next" href="exaone.html"><small>UP NEXT</small><b>EXAONE 경량화 →</b></a>
+  </main>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/charts.js"></script>
+  <script src="../assets/js/motion.js"></script>
+</body>
+</html>
