@@ -32,8 +32,8 @@
   const neighbors = new Map(nodes.map(n => [n, new Set()]));
   links.forEach(([a, b]) => { neighbors.get(a).add(b); neighbors.get(b).add(a); });
 
-  // dust stars
-  const dust = Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.1 + .2, p: Math.random() * 6 }));
+  // dust stars (static: no twinkle)
+  const dust = Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.1 + .2, a: 0.08 + Math.random() * 0.12 }));
 
   let W, H, DPR;
   function size() {
@@ -43,34 +43,13 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   size();
-  addEventListener('resize', size);
   nodes.forEach((n, i) => {
     const a = (i / nodes.length) * Math.PI * 2;
     n.x = W / 2 + Math.cos(a) * (n.hub ? 120 : 260) + (Math.random() - .5) * 40;
     n.y = H / 2 + Math.sin(a) * (n.hub ? 120 : 220) + (Math.random() - .5) * 40;
   });
 
-  let hover = null, drag = null, mx = 0, my = 0, rot = 0;
-  const pick = (x, y) => {
-    let best = null, bd = 26 * 26;
-    nodes.forEach(n => { const d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < bd) { bd = d; best = n; } });
-    return best;
-  };
-  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  cv.addEventListener('pointermove', e => {
-    [mx, my] = pos(e);
-    if (drag) { drag.x = mx; drag.y = my; drag.vx = drag.vy = 0; }
-    else hover = pick(mx, my);
-    cv.style.cursor = drag ? 'grabbing' : hover ? 'pointer' : 'grab';
-  });
-  cv.addEventListener('pointerdown', e => { const [x, y] = pos(e); drag = pick(x, y); if (drag) cv.setPointerCapture(e.pointerId); });
-  const up = () => { drag = null; };
-  cv.addEventListener('pointerup', up);
-  cv.addEventListener('pointercancel', up);
-  cv.addEventListener('pointerleave', () => { if (!drag) hover = null; });
-
-  let visible = false;
-  new IntersectionObserver(e => visible = e[0].isIntersecting).observe(cv);
+  let hover = null, drag = null;
 
   function step() {
     const cx = W / 2, cy = H / 2;
@@ -94,29 +73,28 @@
       const f = (d - L) * k;
       a.vx += dx / d * f; a.vy += dy / d * f; b.vx -= dx / d * f; b.vy -= dy / d * f;
     });
-    // gravity + gentle rotation
-    rot += 0.0009;
+    // gravity toward the centre, damping; returns the fastest speed so callers know when it has settled
+    let vmax = 0;
     nodes.forEach(n => {
       n.vx += (cx - n.x) * 0.0009; n.vy += (cy - n.y) * 0.0012;
-      const rx = n.x - cx, ry = n.y - cy;
-      n.vx += -ry * 0.0006; n.vy += rx * 0.0006;
-      if (n === drag) return;
+      if (n === drag) { n.vx = n.vy = 0; return; }
       n.vx *= 0.86; n.vy *= 0.86;
       n.x += n.vx; n.y += n.vy;
       n.x = Math.max(40, Math.min(W - 40, n.x));
       n.y = Math.max(40, Math.min(H - 40, n.y));
+      vmax = Math.max(vmax, Math.abs(n.vx), Math.abs(n.vy));
     });
+    return vmax;
   }
+  // settle the layout before anyone sees it, so the graph starts at rest
+  for (let k = 0; k < 600 && step() > 0.01; k++);
 
-  function draw(t) {
-    requestAnimationFrame(draw);
-    if (!visible) return;
-    step();
+  function render() {
     const dark = window.isDark ? window.isDark() : true;
     const fg = dark ? '255,255,255' : '17,17,17';
     ctx.clearRect(0, 0, W, H);
     dust.forEach(s => {
-      ctx.fillStyle = 'rgba(' + fg + ',' + (0.08 + 0.12 * (Math.sin(t * 0.0015 + s.p) + 1) / 2) + ')';
+      ctx.fillStyle = 'rgba(' + fg + ',' + s.a.toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, 6.283); ctx.fill();
     });
     const focus = drag || hover;
@@ -140,10 +118,47 @@
       }
       ctx.fillStyle = 'rgba(' + fg + ',' + (n.hub ? a : 0.75 * a) + ')';
       ctx.beginPath(); ctx.arc(n.x, n.y, n === focus ? n.r + 2 : n.r, 0, 6.283); ctx.fill();
-      ctx.font = (n.hub ? '600 13px ' : '11px ') + "'Wanted Sans', system-ui, sans-serif";
+      ctx.font = (n.hub ? '600 13px ' : '11px ') + "Figtree, 'Wanted Sans', system-ui, sans-serif";
       ctx.fillStyle = 'rgba(' + fg + ',' + (n.hub ? 0.95 * a : 0.55 * a) + ')';
       ctx.fillText(n.name, n.x + (n.hub ? 14 : 7), n.y + 4);
     });
   }
-  requestAnimationFrame(draw);
+
+  // physics runs only while a node is dragged, then until the graph comes to rest
+  let raf = 0;
+  function tick() {
+    const vmax = step();
+    render();
+    raf = (drag || vmax > 0.02) ? requestAnimationFrame(tick) : 0;
+  }
+  const wake = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+  const pick = (x, y) => {
+    let best = null, bd = 26 * 26;
+    nodes.forEach(n => { const d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < bd) { bd = d; best = n; } });
+    return best;
+  };
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener('pointermove', e => {
+    const [x, y] = pos(e);
+    if (drag) { drag.x = x; drag.y = y; wake(); }
+    else {
+      const h = pick(x, y);
+      if (h !== hover) { hover = h; if (!raf) render(); } // highlight only, nothing moves
+    }
+    cv.style.cursor = drag ? 'grabbing' : hover ? 'pointer' : 'grab';
+  });
+  cv.addEventListener('pointerdown', e => {
+    const [x, y] = pos(e);
+    drag = pick(x, y);
+    if (drag) { cv.setPointerCapture(e.pointerId); wake(); }
+  });
+  const up = () => { if (drag) { drag = null; wake(); } };
+  cv.addEventListener('pointerup', up);
+  cv.addEventListener('pointercancel', up);
+  cv.addEventListener('pointerleave', () => { if (!drag && hover) { hover = null; if (!raf) render(); } });
+  addEventListener('resize', () => { size(); wake(); });
+  addEventListener('themechange', () => { if (!raf) render(); });
+  render();
+  document.fonts.ready.then(() => { if (!raf) render(); }); // redraw labels once Figtree arrives
 })();
