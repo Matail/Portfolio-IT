@@ -54,7 +54,7 @@
   <main class="cs lg-page">
     <header class="cs-hero lg-hero" data-hero style="--c1:#ff7a2f;--c2:#b5292b;--c3:#22100a">
       <div class="lg-hmap" id="heroMap" aria-hidden="true"></div>
-      <p class="lg-route" aria-hidden="true"><i></i><span id="heroRoute">Houston → New York</span></p>
+      <p class="lg-route" aria-hidden="true"><i></i><span id="heroRoute">Detroit → Miami</span></p>
       <div class="cs-hero-in">
         <p class="cs-kicker">exp/02 · 데이터 · 예측</p>
         <h1>물류 운송비 예측</h1>
@@ -163,7 +163,7 @@
         <div class="lg-two">
           <figure class="chart reveal reveal-scale">
             <figcaption><span>1차 분석 · 원 스케일 cost_proxy</span>
-              <span class="seg" data-for="lgBars"><button type="button" class="is-on" data-key="v">±10%</button><button type="button" data-key="v2">±20%</button></span></figcaption>
+              <span class="seg" data-for="lgBars" role="group" aria-label="오차 범위"><button type="button" class="is-on" data-key="v" aria-pressed="true">±10%</button><button type="button" data-key="v2" aria-pressed="false">±20%</button></span></figcaption>
             <ul class="bars" id="lgBars" data-max="100" data-unit="%">
               <li data-v="70.3" data-v2="98.2" class="best">RandomForest</li>
               <li data-v="52.2" data-v2="84.0">XGBoost</li>

@@ -788,7 +788,7 @@ main > *, .footer { position: relative; z-index: 2; }
 .lg-route { position: absolute; left: 50%; bottom: 44px; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; translate: -50% 0; background: rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); font: 600 12px var(--sans); letter-spacing: .02em; color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .lg-route i { width: 8px; height: 8px; border-radius: 50%; background: #ffd2a8; box-shadow: 0 0 8px #ffb37a; }
 .lg-hmap { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.lg-hmap svg { width: min(1180px, 96vw); height: auto; opacity: .95; }
+.lg-hmap svg { width: min(1180px, 96vw); height: auto; opacity: .95; -webkit-mask-image: radial-gradient(ellipse 32% 24% at 50% 47%, transparent 45%, #000 100%); mask-image: radial-gradient(ellipse 32% 24% at 50% 47%, transparent 45%, #000 100%); }
 .lg-hmap .us { fill: rgba(255, 255, 255, .035); stroke: rgba(255, 255, 255, .16); stroke-width: .7; }
 .lg-hmap .route { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.3; stroke-dasharray: 3 6; stroke-linecap: round; }
 .lg-hmap .route.on { stroke: #fff; stroke-width: 1.8; stroke-dasharray: none; }
@@ -809,6 +809,7 @@ main > *, .footer { position: relative; z-index: 2; }
 .lg-io-out { display: grid; gap: 8px; }
 .lg-io-out div { padding: 12px 14px; border-radius: 10px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line-2); }
 .lg-io-out b { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; }
+.lg-io.off .wire { animation-play-state: paused; }
 .lg-io.in .lg-io-in span { animation: chipIn .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms); }
 @keyframes chipIn { from { opacity: 0; transform: translateY(8px); } }
 
@@ -822,6 +823,7 @@ main > *, .footer { position: relative; z-index: 2; }
 .lg-role-fig .src:nth-child(1) { left: 6%; } .lg-role-fig .src:nth-child(2) { left: 30%; } .lg-role-fig .src:nth-child(3) { left: 52%; } .lg-role-fig .src:nth-child(4) { left: 74%; }
 .lg-role-fig .row { position: absolute; left: 6%; right: 6%; bottom: 16px; height: 22px; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font: 600 11px var(--sans); color: #0b1a0d; white-space: nowrap; overflow: hidden; background: linear-gradient(90deg, var(--ok), color-mix(in srgb, var(--ok) 40%, transparent)); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease) .7s; }
 .lg-role.in .lg-role-fig .src { transform: translateY(42px) scale(.9); opacity: 0; }
+[data-theme='light'] .lg-role-fig .row { color: #fff; }
 .lg-role.in .lg-role-fig .row { transform: none; }
 .lg-role-fig.ui .map { position: absolute; left: 10px; top: 10px; bottom: 10px; width: 54%; border-radius: 6px; background: color-mix(in srgb, var(--lg-blue) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lg-blue) 50%, transparent); }
 .lg-role-fig.ui .map::after { content: ''; position: absolute; left: 14%; top: 60%; width: 70%; height: 2px; background: var(--lg-warm); transform: rotate(-18deg) scaleX(0); transform-origin: left; transition: transform 1s var(--ease) .4s; }
@@ -872,7 +874,8 @@ main > *, .footer { position: relative; z-index: 2; }
 .lg-imp-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 .lg-imp-top b { font-size: 15px; font-weight: 600; }
 .lg-imp .seg button { padding: 7px 12px; font-size: 12px; }
-.lg-imp .seg button:focus-visible { outline: 2px solid var(--ok); outline-offset: -3px; }
+.lg-page .seg button:focus-visible { outline: 2px solid var(--ok); outline-offset: -3px; }
+.lg-imp .seg { flex-wrap: wrap; max-width: 100%; }
 .lg-imp-list { display: grid; gap: 8px; margin-top: 18px; list-style: none; }
 .lg-imp-list li { display: grid; grid-template-columns: 120px minmax(0, 1fr) 64px; align-items: center; gap: 12px; font-size: 13px; }
 .lg-imp-list code { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--fg-2); }

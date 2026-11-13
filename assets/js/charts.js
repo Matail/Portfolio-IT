@@ -73,7 +73,7 @@
   document.querySelectorAll('.seg[data-for]').forEach(seg => {
     const target = document.getElementById(seg.dataset.for);
     seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      seg.querySelectorAll('button').forEach(x => x.classList.toggle('is-on', x === b));
+      seg.querySelectorAll('button').forEach(x => { x.classList.toggle('is-on', x === b); x.setAttribute('aria-pressed', x === b); });
       target.setKey(b.dataset.key);
     }));
   });

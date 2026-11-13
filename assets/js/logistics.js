@@ -117,30 +117,32 @@
     const routes = ROUTES.map(([a, b]) => {
       const [x1, y1] = pos[a], [x2, y2] = pos[b];
       const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
-      const cx = mx + (dy / len) * len * 0.18 * (dx > 0 ? -1 : 1), cy = my - Math.abs(dx / len) * len * 0.18;
+      const cx = mx + (dy / len) * len * 0.18 * (dx > 0 ? 1 : -1), cy = my - Math.abs(dx / len) * len * 0.18;
       const p = sv('path', { class: 'route', d: `M${x1.toFixed(1)},${y1.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}` }, gR);
-      return { a, b, p, len: p.getTotalLength(), t: Math.random(), truck: reduce ? null : sv('circle', { class: 'truck', r: 3.2 }, gT) };
+      const L = p.getTotalLength(), N = 160, pts = [];
+      for (let i = 0; i <= N; i++) { const q = p.getPointAtLength(i / N * L); pts.push([q.x, q.y]); } // read once, write only in the loop
+      return { a, b, p, len: L, pts, t: Math.random(), truck: reduce ? null : sv('circle', { class: 'truck', r: 3.2 }, gT) };
     });
     for (const id in pos) {
       sv('circle', { class: 'hub-ring', cx: pos[id][0], cy: pos[id][1], r: 6 }, gH).style.animationDelay = (Math.random() * 2.4).toFixed(2) + 's';
       sv('circle', { class: 'hub', cx: pos[id][0], cy: pos[id][1], r: 2.6 }, gH);
     }
     const label = $('#heroRoute');
-    let cur = 0, live = false, raf = 0, tAuto = 0, last = 0;
+    let cur = 6, live = false, raf = 0, tAuto = 0, last = 0; // rest on Detroit → Miami, clear of the title
     const highlight = i => {
       routes.forEach((r, k) => r.p.classList.toggle('on', k === i));
       const r = routes[i];
       if (label) label.textContent = `${HUB[r.a][0]} → ${HUB[r.b][0]}`;
     };
-    highlight(0);
+    highlight(cur);
     if (reduce) return;
     const frame = t => {
       if (!live) return;
       const dt = last ? Math.min(64, t - last) : 16; last = t;
       routes.forEach(r => {
         r.t = (r.t + dt / (r.len * 22)) % 1;
-        const q = r.p.getPointAtLength(r.t * r.len);
-        r.truck.setAttribute('cx', q.x.toFixed(1)); r.truck.setAttribute('cy', q.y.toFixed(1));
+        const f = r.t * (r.pts.length - 1), i = Math.floor(f), w = f - i, A = r.pts[i], B = r.pts[Math.min(i + 1, r.pts.length - 1)];
+        r.truck.setAttribute('cx', (A[0] + (B[0] - A[0]) * w).toFixed(1)); r.truck.setAttribute('cy', (A[1] + (B[1] - A[1]) * w).toFixed(1));
       });
       raf = requestAnimationFrame(frame);
     };
@@ -154,6 +156,7 @@
 
   /* ---------- 01: input chips arrive one by one; 06: counters ---------- */
   $$('.lg-io-in span').forEach((s, i) => s.style.setProperty('--i', i));
+  [$('.lg-io')].forEach(n => watch(n, v => n.classList.toggle('off', !v), 0));
   $$('.lg-pipe .lg-step').forEach((s, i) => s.style.setProperty('--i', i));
   once($('#award .cs-metrics'), () => $$('#award b[data-count]').forEach((b, i) => {
     const d = +(b.dataset.digits || 0), suf = b.dataset.suffix || '';
@@ -163,13 +166,14 @@
 
   /* ---------- 02: diesel, CPI and unemployment by year (dashboard data files) ---------- */
   figure('macro', function () {
-    const host = $('#macroGrid'), M = D.macro; if (!host || !M || !M.years) return;
-    const Y = M.years;
+    const host = $('#macroGrid'), M = D.macro || {}, Y = M.years || [];
+    const full = a => Array.isArray(a) && a.length === Y.length && Y.length > 1;
     const panels = [
-      { title: '디젤 · $/gal', note: '경로 16,491개의 평균과 범위', y: M.dieselMean, lo: M.dieselMin, hi: M.dieselMax, d: 2, min: 2, max: 6 },
-      { title: '소비자물가 CPI', note: '연평균', y: M.cpi, d: 0, min: 240, max: 300 },
-      { title: '실업률 · %', note: '연평균', y: M.unrate, d: 1, min: 0, max: 9 }
-    ];
+      { title: '디젤 · $/gal', note: '경로 16,491개의 평균과 범위', y: M.dieselMean, lo: full(M.dieselMin) && full(M.dieselMax) ? M.dieselMin : null, hi: M.dieselMax, d: 2, min: 2, max: 6, ticks: [2, 4, 6] },
+      { title: '소비자물가 CPI', note: '연평균', y: M.cpi, d: 0, min: 240, max: 300, ticks: [240, 270, 300] },
+      { title: '실업률 · %', note: '연평균', y: M.unrate, d: 1, min: 0, max: 9, ticks: [0, 3, 6, 9] }
+    ].filter(pn => full(pn.y));
+    if (!host || !panels.length) { $('#macroChart') && $('#macroChart').remove(); return; }
     const built = panels.map(pn => {
       const fig = el('figure'), cap = el('figcaption'), plot = el('div', 'st-plot');
       const peak = pn.y.indexOf(Math.max(...pn.y));
@@ -188,7 +192,7 @@
       plot.prepend(s);
       const iw = W - pl - pr, ih = H - pt - pb;
       const x = i => pl + i / (Y.length - 1) * iw, y = v => pt + ih - (v - pn.min) / (pn.max - pn.min) * ih;
-      [pn.min, (pn.min + pn.max) / 2, pn.max].forEach(t => {
+      pn.ticks.forEach(t => {
         sv('line', { class: 'grid', x1: pl, x2: pl + iw, y1: y(t), y2: y(t) }, s);
         sv('text', { x: pl - 6, y: y(t) + 4, 'text-anchor': 'end' }, s).textContent = fmt(t, 0);
       });
@@ -209,7 +213,8 @@
 
   /* ---------- 04: how the model inputs changed across vif.R versions ---------- */
   figure('vif', function () {
-    const host = $('#vifRows'), V = D.vif; if (!host || !V || !V.history) return;
+    const host = $('#vifRows'), V = D.vif;
+    if (!host || !V || !Array.isArray(V.history) || !V.history.length) { $('#vifChart') && $('#vifChart').remove(); return; }
     const final = V.finalNumericFeatures || [];
     const TARGET = { value: '화물 가치', cost_proxy: '운송비', next_cp_per_value: '다음 해 운송비/가치' };
     const rows = V.history.map(h => ({ when: h.date.slice(2).replace(/-/g, '.'), sub: '목표 · ' + (TARGET[h.response] || h.response), feats: h.features, final: false }));
@@ -227,8 +232,9 @@
 
   /* ---------- 05: feature importance by model (dashboard values) ---------- */
   figure('importance', function () {
-    const list = $('#impList'), tabs = $('#impTabs'), I = D.importance && D.importance.byModel; if (!list || !tabs || !I) return;
-    const MODELS = [['catboost', 'CatBoost'], ['randomforest', 'RandomForest'], ['xgboost', 'XGBoost'], ['lightgbm', 'LightGBM']].filter(([id]) => I[id]);
+    const list = $('#impList'), tabs = $('#impTabs'), I = (D.importance && D.importance.byModel) || {};
+    const MODELS = [['catboost', 'CatBoost'], ['randomforest', 'RandomForest'], ['xgboost', 'XGBoost'], ['lightgbm', 'LightGBM']].filter(([id]) => Array.isArray(I[id]) && I[id].length);
+    if (!list || !tabs || !MODELS.length) { $('#impBox') && $('#impBox').remove(); return; }
     const LABEL = { tons: '톤수', value: '가치', dist_km_mid: '거리', CPIAUCSL: '물가', UNRATE: '실업률', diesel_avg: '유가', year: '연도', sctg2: '품목', dms_orig: '출발', dms_dest: '도착' };
     const feats = [];
     MODELS.forEach(([id]) => I[id].forEach(f => { if (!feats.includes(f.feature)) feats.push(f.feature); }));
