@@ -62,7 +62,7 @@
 
     <div class="cs-strip" aria-label="자료">
       <div class="cs-track">
-          <figure><img src="../assets/img/st-unity.webp" alt="Unity 6로 다시 만든 The STREAMS+" loading="lazy" /><figcaption>Unity 6로 다시 만든 The STREAMS+</figcaption></figure>
+          <figure><img src="../assets/img/st-unity.webp" alt="Unity 6로 다시 만든 The STREAMS+ 플레이 화면" loading="lazy" /><figcaption>Unity 6로 다시 만든 The STREAMS+</figcaption></figure>
           <figure><img src="../assets/img/st-webgame.webp" alt="캡스톤 때 배포한 1차 웹게임" loading="lazy" /><figcaption>캡스톤 때 배포한 1차 웹게임</figcaption></figure>
           <figure><img src="../assets/img/st-curve.webp" alt="캡스톤 버전 학습 곡선 · 200k 에피소드" loading="lazy" /><figcaption>캡스톤 버전 학습 곡선 · 200k 에피소드</figcaption></figure>
           <figure><img src="../assets/img/st17-compare.webp" alt="사람과 같은 정보 조건에서의 평균 점수" loading="lazy" /><figcaption>사람과 같은 정보 조건 · v16 24.4 → v17 48.8</figcaption></figure>
@@ -91,8 +91,8 @@
         </div>
         <dl class="cs-facts reveal">
           <div><dt>Timeline</dt><dd>캡스톤 2025.09 – 2026 1학기<br />개인 연구 2026.09 – 현재</dd></div>
-          <div><dt>Team</dt><dd>캡스톤 2인 팀 (에이전트 담당)<br />이후 혼자 전부 진행</dd></div>
-          <div><dt>Role</dt><dd>에이전트 설계 · 학습 · 재검증<br />Unity 재구축 · 서비스 운영</dd></div>
+          <div><dt>Team</dt><dd>캡스톤 2인 팀 (에이전트 · 웹게임 담당)<br />이후 혼자 전부 진행</dd></div>
+          <div><dt>Role</dt><dd>에이전트 설계 · 학습 · 재검증<br />웹게임 · Unity 재구축 · 서비스 운영</dd></div>
           <div><dt>Stack</dt><dd>PyTorch · D3QN · 모방학습(BC) · TD n-tuple · Gumbel AlphaZero · piKL · Unity 6 WebGL · Cloudflare Workers · D1</dd></div>
         </dl>
         <div class="cs-links reveal"><a href="https://matail.party/games/streams-unity" target="_blank" rel="noopener">play live ↗</a><a href="https://matail.party/stats/streams/" target="_blank" rel="noopener">live stats ↗</a><a href="https://github.com/Koojunyeong/streams" target="_blank" rel="noopener">github ↗</a></div>
@@ -127,16 +127,17 @@
       <section class="cs-sec" id="role">
         <div class="cs-head reveal">
           <p class="eyebrow">03 · 내가 한 일</p>
-          <h2>캡스톤에서는 에이전트를, 지금은 전부를</h2>
+          <h2>캡스톤에서는 에이전트와 웹게임을, 지금은 전부를</h2>
         </div>
         <div class="cs-prose reveal">
-          <p>캡스톤은 2인 팀으로 진행했고, 저는 에이전트 개발을, 팀원은 사람 플레이 데이터 분석을 맡았습니다. 캡스톤이 끝난 뒤에는 재검증부터 재학습, 게임 재구축과 운영, 후속 연구까지 혼자 진행하고 있습니다.</p>
+          <p>캡스톤은 2인 팀으로 진행했고, 저는 에이전트와 게임 웹앱 개발을, 팀원은 사람 플레이 데이터 분석을 맡았습니다. 캡스톤이 끝난 뒤에는 재검증부터 재학습, 게임 재구축과 운영, 후속 연구까지 혼자 진행하고 있습니다.</p>
         </div>
         <div class="cs-role">
           <div class="reveal" style="--d:0ms">
             <h3>캡스톤 <small>2인 팀 · 2025.09 – 2026 1학기</small></h3>
             <ul>
               <li><b>에이전트 개발</b>91차원 상태를 설계하고, PyTorch로 D3QN 신경망과 모방학습(BC) 사전학습을 구현했습니다. 두 가지 승리 전략을 나눠 실험해 에이전트의 전략을 정했습니다.</li>
+              <li><b>게임 웹앱 개발</b>사람과 에이전트가 같은 카드로 대결하는 PVE 웹게임을 만들어 배포하고, 사람 플레이 기록을 모았습니다.</li>
               <li><b>모방학습 데이터 선별</b>사람 플레이 중 40점 이상의 고득점 플레이만 골라 추가 모방학습에 썼습니다.</li>
               <li class="team"><b>플레이 데이터 분석 <small>팀원</small></b>사람 플레이의 점수 분포와 특성 상관 분석은 팀원이 맡았습니다.</li>
             </ul>
@@ -186,7 +187,7 @@
             <div>
               <small>STEP 03</small>
               <h3>먼저 배포해서 사람의 플레이를 모으다</h3>
-              <p>모방학습에는 실제 사람의 플레이가 필요했습니다. 그래서 1차로 사람과 에이전트가 대결하는 PVE 웹게임을 배포해 플레이를 모았습니다. 캡스톤 기간이 짧아 수집 도중에 모델을 업데이트해야 했고, 발표 시점까지 <b>1,346판</b>이 모였습니다. 이후에도 기록이 쌓여 1,655판이 되었습니다.</p>
+              <p>모방학습에는 실제 사람의 플레이가 필요했습니다. 그래서 사람과 에이전트가 대결하는 PVE 웹게임을 직접 만들어 1차로 배포하고, 플레이를 모았습니다. 캡스톤 기간이 짧아 수집 도중에 모델을 업데이트해야 했고, 발표 시점까지 <b>1,346판</b>이 모였습니다. 이후에도 기록이 쌓여 1,655판이 되었습니다.</p>
             </div>
             <figure class="cs-fig">
               <a href="../assets/img/st-webgame.webp" target="_blank" rel="noopener"><img src="../assets/img/st-webgame.webp" alt="캡스톤 1차 웹게임 화면" loading="lazy" width="1380" height="806" /></a>
@@ -358,9 +359,9 @@
           <p>게임은 Unity 6로 다시 만들었습니다. 덱과 AI는 Cloudflare Worker 서버에만 두고 카드를 한 장씩 보내서, 사람도 AI도 덱을 미리 볼 수 없습니다. 도트 아트 화면, 튜토리얼, 8비트 효과음을 넣었고, 방 코드로 2~8명이 같은 카드를 받아 겨루는 친구 대전(Durable Object와 WebSocket, 턴 제한 20초, 나간 자리는 AI가 이어 둠)까지 WebGL로 배포했습니다.</p>
           <p>플레이 기록은 D1에 쌓입니다. 턴마다 놓은 칸과 생각한 시간을 남기고, 칸 위에서 망설인 시간·판 포기·재대전 같은 행동은 따로 기록합니다. 학습에 넣을 판은 품질 규칙(테스트 판, 다시 둔 턴이 있는 판 제외)으로 거르고, 집계는 <a href="https://matail.party/stats/streams/" target="_blank" rel="noopener">공개 통계 페이지</a>에 실시간으로 올라갑니다.</p>
         </div>
-        <figure class="cs-fig narrow reveal">
-          <a class="photo" href="../assets/img/st-unity.webp" target="_blank" rel="noopener"><img src="../assets/img/st-unity.webp" alt="Unity 6로 다시 만든 The STREAMS+" loading="lazy" width="1200" height="630" /></a>
-          <figcaption>Unity 6로 다시 만든 The STREAMS+의 대표 이미지. 도트 아트 테이블에서 AI와 같은 카드를 받아 둡니다.</figcaption>
+        <figure class="cs-fig reveal">
+          <a class="photo" href="../assets/img/st-unity.webp" target="_blank" rel="noopener"><img src="../assets/img/st-unity.webp" alt="Unity 6로 다시 만든 The STREAMS+ 플레이 화면" loading="lazy" width="1429" height="803" /></a>
+          <figcaption>Unity 6로 다시 만든 The STREAMS+ (튜토리얼 11턴째). 가운데 위가 AI 보드, 아래가 내 보드이고, 오른쪽에 남은 카드와 지금 구간 점수가 보입니다.</figcaption>
         </figure>
         <figure class="flow flow-arch reveal reveal-scale" aria-label="Unity 버전 서비스 구조">
           <div class="node"><small>client</small><b>Unity 6 WebGL</b><span>화면과 입력만 · 도트 아트 · 튜토리얼</span></div>
