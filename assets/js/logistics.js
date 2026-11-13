@@ -154,11 +154,113 @@
 
   /* ---------- 01: input chips arrive one by one; 06: counters ---------- */
   $$('.lg-io-in span').forEach((s, i) => s.style.setProperty('--i', i));
-  $$('.lg-split li').forEach((li, i) => li.style.setProperty('--i', i));
+  $$('.lg-pipe .lg-step').forEach((s, i) => s.style.setProperty('--i', i));
   once($('#award .cs-metrics'), () => $$('#award b[data-count]').forEach((b, i) => {
-    b.textContent = '0' + (b.dataset.suffix || '');
-    setTimeout(() => countTo(b, +b.dataset.count, 1, b.dataset.suffix || ''), i * 200);
+    const d = +(b.dataset.digits || 0), suf = b.dataset.suffix || '';
+    b.textContent = fmt(0, d) + suf;
+    setTimeout(() => countTo(b, +b.dataset.count, d, suf), i * 200);
   }));
 
-  /* data-driven figures are added below */
+  /* ---------- 02: diesel, CPI and unemployment by year (dashboard data files) ---------- */
+  figure('macro', function () {
+    const host = $('#macroGrid'), M = D.macro; if (!host || !M || !M.years) return;
+    const Y = M.years;
+    const panels = [
+      { title: '디젤 · $/gal', note: '경로 16,491개의 평균과 범위', y: M.dieselMean, lo: M.dieselMin, hi: M.dieselMax, d: 2, min: 2, max: 6 },
+      { title: '소비자물가 CPI', note: '연평균', y: M.cpi, d: 0, min: 240, max: 300 },
+      { title: '실업률 · %', note: '연평균', y: M.unrate, d: 1, min: 0, max: 9 }
+    ];
+    const built = panels.map(pn => {
+      const fig = el('figure'), cap = el('figcaption'), plot = el('div', 'st-plot');
+      const peak = pn.y.indexOf(Math.max(...pn.y));
+      cap.append(el('span', null, pn.title), el('b', null, `${Y[peak]} ${fmt(pn.y[peak], pn.d)}`));
+      fig.append(cap, plot);
+      host.append(fig);
+      plot.setAttribute('role', 'img');
+      plot.setAttribute('aria-label', `${pn.title} ${pn.note}: ` + Y.map((yr, i) => `${yr} ${fmt(pn.y[i], pn.d)}`).join(', '));
+      return { pn, plot, peak };
+    });
+    let shown = false;
+    const draw = () => built.forEach(({ pn, plot, peak }) => {
+      plot.querySelector('svg') && plot.querySelector('svg').remove();
+      const W = plot.clientWidth, H = 150, pl = 30, pr = 10, pt = 10, pb = 22;
+      const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, height: H }, null);
+      plot.prepend(s);
+      const iw = W - pl - pr, ih = H - pt - pb;
+      const x = i => pl + i / (Y.length - 1) * iw, y = v => pt + ih - (v - pn.min) / (pn.max - pn.min) * ih;
+      [pn.min, (pn.min + pn.max) / 2, pn.max].forEach(t => {
+        sv('line', { class: 'grid', x1: pl, x2: pl + iw, y1: y(t), y2: y(t) }, s);
+        sv('text', { x: pl - 6, y: y(t) + 4, 'text-anchor': 'end' }, s).textContent = fmt(t, 0);
+      });
+      Y.forEach((yr, i) => { sv('text', { x: x(i), y: H - 6, 'text-anchor': 'middle' }, s).textContent = "'" + String(yr).slice(2); });
+      if (pn.lo) {
+        const up = pn.hi.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`), dn = pn.lo.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).reverse();
+        sv('path', { class: 'band', d: 'M' + up.join('L') + 'L' + dn.join('L') + 'Z' }, s);
+      }
+      const p = sv('path', { class: 'line draw s-warm', d: pn.y.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join('') }, s);
+      if (!shown && !reduce) { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; }
+      sv('circle', { class: 'dot f-warm', cx: x(peak), cy: y(pn.y[peak]), r: 4 }, s);
+    });
+    draw();
+    onResize(host, draw);
+    once(host, () => { shown = true; $$('path.draw', host).forEach(p => { p.style.strokeDashoffset = 0; }); }, 0.4);
+    tableView(host, ['연도', ...panels.map(p => p.title)], Y.map((yr, i) => [String(yr), ...panels.map(p => fmt(p.y[i], p.d))]));
+  });
+
+  /* ---------- 04: how the model inputs changed across vif.R versions ---------- */
+  figure('vif', function () {
+    const host = $('#vifRows'), V = D.vif; if (!host || !V || !V.history) return;
+    const final = V.finalNumericFeatures || [];
+    const TARGET = { value: '화물 가치', cost_proxy: '운송비', next_cp_per_value: '다음 해 운송비/가치' };
+    const rows = V.history.map(h => ({ when: h.date.slice(2).replace(/-/g, '.'), sub: '목표 · ' + (TARGET[h.response] || h.response), feats: h.features, final: false }));
+    rows.push({ when: '최종 입력', sub: '4개 모델 공통 수치 변수', feats: final, final: true });
+    rows.forEach((r, i) => {
+      const li = el('li', r.final ? 'final' : ''), t = el('time', null, r.when), chips = el('div', 'chips');
+      li.style.setProperty('--i', i);
+      t.append(el('small', null, r.sub));
+      r.feats.forEach(f => chips.append(el('span', final.includes(f) ? 'keep' : '', f)));
+      li.append(t, chips);
+      host.append(li);
+    });
+    once($('#vifChart'), () => $('#vifChart').classList.add('in'), 0.3);
+  });
+
+  /* ---------- 05: feature importance by model (dashboard values) ---------- */
+  figure('importance', function () {
+    const list = $('#impList'), tabs = $('#impTabs'), I = D.importance && D.importance.byModel; if (!list || !tabs || !I) return;
+    const MODELS = [['catboost', 'CatBoost'], ['randomforest', 'RandomForest'], ['xgboost', 'XGBoost'], ['lightgbm', 'LightGBM']].filter(([id]) => I[id]);
+    const LABEL = { tons: '톤수', value: '가치', dist_km_mid: '거리', CPIAUCSL: '물가', UNRATE: '실업률', diesel_avg: '유가', year: '연도', sctg2: '품목', dms_orig: '출발', dms_dest: '도착' };
+    const feats = [];
+    MODELS.forEach(([id]) => I[id].forEach(f => { if (!feats.includes(f.feature)) feats.push(f.feature); }));
+    const order = feats.slice(0, 7);
+    const rows = order.map(f => {
+      const li = el('li'), name = el('span'), code = el('code', null, f), tr = el('div', 'track'), fill = el('div', 'fill'), val = el('b', null, '0%');
+      name.append(document.createTextNode((LABEL[f] || f) + ' '), code);
+      tr.append(fill); li.append(name, tr, val); list.append(li);
+      return { f, li, fill, val };
+    });
+    let cur = 0, shown = false;
+    const set = k => {
+      cur = k;
+      const data = I[MODELS[k][0]];
+      $$('button', tabs).forEach((b, j) => { b.classList.toggle('is-on', j === k); b.setAttribute('aria-pressed', j === k); });
+      const sorted = rows.slice().sort((a, b) => ((data.find(d => d.feature === b.f) || {}).pct || 0) - ((data.find(d => d.feature === a.f) || {}).pct || 0));
+      sorted.forEach(r => list.append(r.li)); // largest first
+      rows.forEach(r => {
+        const d = data.find(z => z.feature === r.f), v = d ? d.pct : 0;
+        r.li.classList.toggle('gone', !d);
+        r.fill.style.width = shown ? Math.max(v, d ? 0.6 : 0) + '%' : '0';
+        r.val.textContent = d ? (v < 1 ? v.toFixed(2) : v.toFixed(1)) + '%' : '–';
+      });
+    };
+    MODELS.forEach(([, name], k) => {
+      const b = el('button', null, name);
+      b.type = 'button';
+      b.addEventListener('click', () => set(k));
+      tabs.append(b);
+    });
+    set(0);
+    once($('#impBox'), () => { shown = true; set(cur); }, 0.4);
+    tableView($('#impBox .lg-imp-list'), ['변수', ...MODELS.map(m => m[1])], order.map(f => [(LABEL[f] || f) + ' (' + f + ')', ...MODELS.map(([id]) => { const d = I[id].find(z => z.feature === f); return d ? d.pct + '%' : '–'; })]));
+  });
 })();
