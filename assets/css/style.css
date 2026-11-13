@@ -444,6 +444,7 @@ main > *, .footer { position: relative; z-index: 2; }
 .cs-fig figcaption { margin-top: 10px; font-size: 13px; line-height: 1.65; color: var(--muted); }
 .cs-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 36px; }
 .cs-figs .cs-fig { margin-top: 0; }
+.cs-fig.narrow { max-width: 760px; }
 .cs-figs.photos { grid-template-columns: minmax(0, 2.37fr) minmax(0, 1fr); } /* 4:3 award photo beside the portrait poster photo, same height */
 
 .cs-role { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
@@ -477,6 +478,17 @@ main > *, .footer { position: relative; z-index: 2; }
 .cs-metrics span { display: block; margin-top: 12px; font-size: 13.5px; line-height: 1.6; color: var(--fg-2); }
 
 .cs-sec .chart { margin-top: 32px; }
+.cs-sec code { padding: 1px 6px; border-radius: 6px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); color: var(--fg); font: .88em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.cs-role li.team::before { background: var(--dim); }
+.cs-role li.team b small { margin-left: 6px; font: 12px var(--sans); color: var(--muted); }
+
+/* numbered findings (e.g. what a re-check turned up) */
+.cs-list { display: grid; gap: 12px; max-width: 860px; margin-top: 28px; list-style: none; counter-reset: l; }
+.cs-list li { position: relative; padding: 18px 22px 18px 62px; border-radius: 14px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); counter-increment: l; font-size: 14.5px; line-height: 1.75; color: var(--fg-2); }
+.cs-list li::before { content: counter(l); position: absolute; left: 20px; top: 18px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; box-shadow: inset 0 0 0 1px #f0a33c; font: 600 12px var(--sans); color: #f0a33c; }
+.cs-list b { display: block; margin-bottom: 4px; font-weight: 600; color: var(--fg); }
+.cs-list code { background: var(--bg); }
+.cs-cards em.wait { color: #f0a33c; }
 .cs-callout { max-width: 760px; margin-top: 36px; padding: 18px 22px; border-left: 3px solid var(--ok); border-radius: 4px 14px 14px 4px; background: color-mix(in srgb, var(--ok) 7%, transparent); font-size: 15px; line-height: 1.75; color: var(--fg-2); }
 .cs-callout.warn { border-left-color: #f0a33c; background: color-mix(in srgb, #f0a33c 9%, transparent); }
 .cs-callout a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
