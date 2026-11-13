@@ -153,10 +153,10 @@
           </div>
         </div>
         <div class="lg-pipe ex-pipe reveal reveal-scale" aria-label="압축 순서">
-          <div class="lg-step"><small>01</small><b>캘리브레이션</b><span>1,024 샘플 × 512 토큰</span></div>
+          <div class="lg-step"><small>01</small><b>캘리브레이션</b><span>1,024 샘플 × 512 토큰 · 실행 약 18분</span></div>
           <div class="lg-step hot"><small>02</small><b>SparseGPT</b><span>남길 가중치를 먼저 고름</span></div>
           <div class="lg-step hot"><small>03</small><b>GPTQ W4A16</b><span>남은 가중치를 4bit로, 오차는 나눠 받음</span></div>
-          <div class="lg-step"><small>04</small><b>저장</b><span>compressed-tensors · 약 18분</span></div>
+          <div class="lg-step"><small>04</small><b>저장</b><span>compressed-tensors 형식으로 저장</span></div>
         </div>
       </section>
 
@@ -210,7 +210,7 @@
         </div>
         <div class="st-finds">
           <div class="reveal"><i>1</i><b>lm_head 중복 저장</b><p>나중 모델마다 약 420MB씩 더 컸습니다.</p><strong>2:4 모델 1,257 → 약 838MB</strong></div>
-          <div class="reveal" style="--d:90ms"><i>2</i><b>비정형 프루닝은 크기 이득 없음</b><p>0도 dense 형식으로 저장돼 파일 크기가 GPTQ만 쓴 것과 같았습니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>2</i><b>비정형 프루닝은 크기 이득 없음</b><p>0도 dense 형식으로 저장됐습니다. 1,390.7MB에서 중복된 lm_head 419.4MB를 빼면 GPTQ만 쓴 모델(971.3MB)과 같습니다.</p></div>
           <div class="reveal" style="--d:180ms"><i>3</i><b>35% 설정은 적용되지 않음</b><p>2:4 구조는 정의상 항상 50%입니다. 선형층은 50%, 전체 기준 0.434가 측정됐습니다.</p></div>
           <div class="reveal" style="--d:270ms"><i>4</i><b>로컬 추론 검증 미완</b><p>vLLM으로 모델을 직접 띄워 보는 노트북은 실행 기록이 없었습니다.</p></div>
         </div>

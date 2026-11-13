@@ -920,10 +920,11 @@ main > *, .footer { position: relative; z-index: 2; }
 .ex-hero .cs-hero-in::before { content: ''; position: absolute; inset: -70px -140px; z-index: -1; background: radial-gradient(closest-side, rgba(16, 6, 30, .66), rgba(16, 6, 30, .3) 60%, transparent); pointer-events: none; }
 .ex-hgrid { position: absolute; inset: 0; display: grid; place-content: center; gap: 5px; pointer-events: none; -webkit-mask-image: radial-gradient(ellipse 34% 30% at 50% 48%, transparent 40%, #000 100%); mask-image: radial-gradient(ellipse 34% 30% at 50% 48%, transparent 40%, #000 100%); }
 .ex-row { display: flex; gap: 5px; height: 16px; }
-.ex-row i { flex: none; width: 16px; height: 16px; border-radius: 3px; background: rgba(255, 255, 255, var(--a, .2)); transition: background .6s var(--ease), width .7s var(--ease), margin .7s var(--ease), opacity .5s; }
+.ex-row i { flex: none; width: 16px; height: 16px; border-radius: 3px; background: rgba(255, 255, 255, var(--a, .2)); transition: background .6s var(--ease), box-shadow .6s var(--ease); }
 .ex-row i.z { --a: .03; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
-.ex-row i.gone { width: 0; margin-left: -5px; opacity: 0; }
+.ex-row i.q { background: rgba(206, 166, 255, calc(var(--a, .2) + .14)); }
 .ex-row i.m { width: 6px; background: rgba(255, 200, 120, .55); }
+.ex-row i.gone, .ex-mat .r i.gone { display: none; } /* packing is a FLIP in exaone.js, so nothing animates width */
 .ex-phase { position: absolute; left: 50%; bottom: 44px; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; translate: -50% 0; background: rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); font: 600 12px var(--sans); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .ex-phase i { width: 8px; height: 8px; border-radius: 50%; background: #e7c6ff; box-shadow: 0 0 8px #c89bff; }
 
@@ -956,16 +957,16 @@ main > *, .footer { position: relative; z-index: 2; }
 .ex-mask-body { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: center; margin-top: 20px; }
 .ex-mat { display: grid; gap: 4px; }
 .ex-mat .r { display: flex; gap: 4px; height: 18px; }
-.ex-mat .r i { flex: none; width: 18px; height: 18px; border-radius: 3px; background: color-mix(in srgb, var(--ex-q) calc(var(--a, .5) * 100%), var(--bg)); transition: background .5s var(--ease), width .6s var(--ease), margin .6s var(--ease), opacity .4s; }
+.ex-mat .r i { flex: none; width: 18px; height: 18px; border-radius: 3px; background: color-mix(in srgb, var(--ex-q) calc(var(--a, .5) * 100%), var(--bg)); transition: background .5s var(--ease), box-shadow .5s var(--ease); }
 .ex-mat .r i.z { background: var(--bg); box-shadow: inset 0 0 0 1px var(--line-2); }
-.ex-mat .r i.gone { width: 0; margin-left: -4px; opacity: 0; }
 .ex-mat .r i.m { width: 8px; background: color-mix(in srgb, var(--ex-meta) 70%, var(--bg)); }
 .ex-mask-read small { font: 600 10px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .ex-bytes { position: relative; height: 16px; margin-top: 10px; border-radius: 4px; background: var(--bg); overflow: hidden; }
-.ex-bytes i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--ex-q) 0 var(--w1, 100%), var(--ex-meta) var(--w1, 100%) 100%); transition: width .8s var(--ease); }
+.ex-bytes i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--ex-q) 0 var(--w1, 100%), var(--ex-meta) var(--w1, 100%) 100%); transform-origin: left; transition: transform .8s var(--ease); }
 .ex-mask-read p { margin-top: 10px; font-size: 14px; color: var(--fg-2); }
 .ex-mask-read p b { color: var(--fg); font-weight: 600; }
 .ex-pipe { margin-top: 18px; }
+.ex-page .st-award .cs-fig { max-width: 360px; margin-top: 0; }
 .ex-bars .bar { grid-template-columns: 140px 1fr 86px; }
 
 /* 07: the duplicated lm_head */
@@ -994,8 +995,8 @@ main > *, .footer { position: relative; z-index: 2; }
 @media (max-width: 760px) {
   .ex-page .cs-sec { padding-top: 110px; }
   .ex-row { height: 10px; gap: 3px; } .ex-hgrid { gap: 3px; }
-  .ex-row i { width: 10px; height: 10px; } .ex-row i.gone { margin-left: -3px; } .ex-row i.m { width: 4px; }
-  .ex-mat .r { height: 14px; gap: 3px; } .ex-mat .r i { width: 14px; height: 14px; } .ex-mat .r i.gone { margin-left: -3px; } .ex-mat .r i.m { width: 6px; }
+  .ex-row i { width: 10px; height: 10px; } .ex-row i.m { width: 4px; }
+  .ex-mat .r { height: 14px; gap: 3px; } .ex-mat .r i { width: 14px; height: 14px; } .ex-mat .r i.m { width: 6px; }
   .ex-bars .bar { grid-template-columns: 110px 1fr 70px; }
 }
 
@@ -1060,7 +1061,7 @@ main > *, .footer { position: relative; z-index: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } /* one pass: infinite loops would otherwise flicker */
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; transition-delay: 0s !important; animation-delay: 0s !important; } /* one pass: infinite loops would otherwise flicker; no staggered waits */
   html { scroll-behavior: auto; }
   .cs-strip { overflow-x: auto; }
 }
