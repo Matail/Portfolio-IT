@@ -237,7 +237,10 @@
         <div class="st-finds">
           <div class="reveal"><i>1</i><b>앞 카드를 봤다</b><p>마스크가 <code>deck[ci+1:]</code>로 칸을 골랐습니다.</p><strong>덱을 알면 항상 300점</strong></div>
           <div class="reveal" style="--d:90ms"><i>2</i><b>부등호 하나</b>
-            <div class="st-eq" aria-hidden="true"><span class="c">15</span><span class="op"><em class="lt">&lt;</em><em class="le">&lt;=</em></span><span class="c">15</span><span class="mark"><em class="no">✕</em><em class="ok">✓</em></span></div>
+            <div class="st-eqs" aria-hidden="true">
+              <div class="st-eq bug"><span class="c">15</span><em>&lt;</em><span class="c">15</span><b>✕ 막힘</b></div>
+              <div class="st-eq fix"><span class="c">15</span><em>&lt;=</em><span class="c">15</span><b>✓ 이어짐</b></div>
+            </div>
             <p>같은 숫자를 막아 덱의 97%에서 안전한 칸이 일찍 사라졌습니다.</p></div>
           <div class="reveal" style="--d:180ms"><i>3</i><b>서버 AI는 무작위</b><p>배포 서버에 PyTorch가 없었습니다. AI의 수 33,100개를 복원해 확인했습니다.</p></div>
           <div class="reveal" style="--d:270ms"><i>4</i><b>적은 판 수 평가</b><p>몇 판만 잰 58.5점이 2,000판으로는 47점이었습니다.</p></div>

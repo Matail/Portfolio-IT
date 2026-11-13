@@ -48,7 +48,15 @@
     };
     node._raf = requestAnimationFrame(step);
   };
-  const onResize = fn => { let t = 0; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fn, 150); }); };
+  // redraw on width changes only: a phone's URL bar changes the height on every scroll
+  const onResize = (host, fn) => {
+    let w = host.clientWidth, t = 0;
+    addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { if (host.clientWidth !== w) { w = host.clientWidth; fn(); } }, 150); });
+  };
+  // each figure on its own: missing data in one must not stop the others
+  const figure = (name, fn) => { try { fn(); } catch (e) { console.warn('streams figure skipped:', name, e); } };
+  // pause looping CSS animations while their figure is off-screen
+  const pauseOffscreen = node => { if (node) watch(node, v => node.classList.toggle('off', !v), 0); };
 
   /* ---------- game rules (same as the server) ---------- */
   const TABLE = [0, 0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300]; // index = run length
@@ -188,7 +196,7 @@
   };
 
   /* ---------- 02: score table as columns ---------- */
-  (function scoreCols() {
+  figure('scoreCols', function () {
     const host = $('#scoreCols'); if (!host) return;
     host.classList.add('st-plot');
     const tip = tipFor(host);
@@ -210,13 +218,13 @@
         if (L === 1 || L % 5 === 0) sv('text', { x: x + bw / 2, y: H - 6, 'text-anchor': 'middle' }, s).textContent = 'L' + L;
         if ([10, 15, 19, 20].includes(L)) sv('text', { class: 'lbl-strong', x: x + bw / 2, y: pt + ih - h - 6, 'text-anchor': 'middle' }, s).textContent = v;
         const hit = sv('rect', { class: 'hit', x: pl + (L - 1) * band, y: pt, width: band, height: ih }, s);
-        hit.addEventListener('pointerenter', () => { r.classList.add('on'); tip.show(x, pt + ih - h - 40, '구간 길이 ' + L, [[getComputedStyle(r).fill, '점수', v + '점']]); });
+        hit.addEventListener('pointerenter', () => { const c = getComputedStyle(r).fill; r.classList.add('on'); tip.show(x, pt + ih - h - 40, '구간 길이 ' + L, [[c, '점수', v + '점']]); });
         hit.addEventListener('pointerleave', () => { r.classList.remove('on'); tip.hide(); });
       }
     };
-    draw(); onResize(draw);
+    draw(); onResize(host, draw);
     once(host, () => host.classList.add('shown'));
-  })();
+  });
 
   /* ---------- 04: Fullstream vs Dummyspace mini boards ---------- */
   $$('.st-mini').forEach(m => {
@@ -230,7 +238,7 @@
   });
 
   /* ---------- 07: what the agent could see ---------- */
-  (function leak() {
+  figure('leak', function () {
     const root = $('#leak'); if (!root) return;
     const BOARD = [3, null, 6, null, 8, null, null, 12, null, 15, null, null, null, 19, null, 22, null, null, 27, null];
     const UPCOMING = [24, 11, 16, 4, 29, 9, 20, 13];
@@ -246,7 +254,7 @@
     }));
     const score = $('#leakScore'), fill = $('#leakFill'), note = $('#leakNote');
     const btns = $$('.seg button', root);
-    let mode = 'v16', auto = !reduce, timer = 0, shown = false;
+    let mode = 'v16', auto = !reduce, hold = false, timer = 0, shown = false;
     const set = m => {
       mode = m;
       root.dataset.mode = m;
@@ -255,13 +263,21 @@
       if (shown) { countTo(score, VAL[m], 1, 800); fill.style.width = (VAL[m] / 75 * 100) + '%'; }
     };
     btns.forEach(b => b.addEventListener('click', () => { auto = false; clearTimeout(timer); set(b.dataset.mode); }));
-    const loop = () => { clearTimeout(timer); if (!auto) return; timer = setTimeout(() => { if (!auto) return; set(mode === 'v16' ? 'fair' : 'v16'); loop(); }, 3400); };
-    once(root, () => { shown = true; score.textContent = '0'; set('v16'); loop(); }, 0.4);
+    const loop = () => { clearTimeout(timer); if (!auto || hold) return; timer = setTimeout(() => { if (!auto || hold) return; set(mode === 'v16' ? 'fair' : 'v16'); loop(); }, 3400); };
+    // (11) hold the auto-toggle while the reader points at or focuses it; (5) keep their choice
+    const holdOn = () => { hold = true; clearTimeout(timer); }, holdOff = () => { hold = false; if (shown) loop(); };
+    root.addEventListener('pointerenter', holdOn); root.addEventListener('pointerleave', holdOff);
+    root.addEventListener('focusin', holdOn); root.addEventListener('focusout', holdOff);
+    const deck = $('#leakDeck');
+    const sizeScan = () => deck.style.setProperty('--scan', Math.max(0, deck.scrollWidth - 32) + 'px');
+    sizeScan(); onResize(deck, sizeScan);
+    pauseOffscreen(root);
+    once(root, () => { shown = true; score.textContent = '0'; set(mode); loop(); }, 0.4);
     watch(root, v => { if (!v) clearTimeout(timer); else if (shown) loop(); });
-  })();
+  });
 
   /* ---------- 07: SGAZ learning curves by value target ---------- */
-  (function sgaz() {
+  figure('sgaz', function () {
     const host = $('#sgazPlot'), S = D.sgazTargets; if (!host || !S) return;
     host.classList.add('st-plot');
     host.tabIndex = 0;
@@ -290,14 +306,12 @@
         const d = ser.x.map((v, i) => (i ? 'L' : 'M') + x(v).toFixed(1) + ',' + y(ser.y[i]).toFixed(1)).join('');
         const p = sv('path', { class: 'line draw ' + ser.cls, d }, s);
         ser._path = p;
-        const color = getComputedStyle(p).stroke;
         if (!drawn && !reduce) {
           const len = p.getTotalLength();
           p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.style.setProperty('--k', k);
-          ser._p = p; ser._len = len;
         }
         const lx = ser.x[ser.x.length - 1], ly = ser.y[ser.y.length - 1];
-        sv('circle', { class: 'dot', cx: x(lx), cy: y(ly), r: 4 }, s).style.fill = color;
+        sv('circle', { class: 'dot f' + ser.cls.slice(1), cx: x(lx), cy: y(ly), r: 4 }, s);
         const t = sv('text', { class: k === 2 ? 'lbl-strong' : '', x: x(lx) + 8, y: y(ly) + 4 }, s);
         t.textContent = `${ser.short} · ${ly}`;
       });
@@ -321,15 +335,16 @@
       host.onfocus = () => showAt(kx);
     };
     draw();
-    if (keys) series.forEach(ser => { const sp = el('span'), i = el('i'); i.style.background = getComputedStyle(host.querySelector('path.' + ser.cls)).stroke; sp.append(i, document.createTextNode(ser.short)); keys.append(sp); });
-    onResize(() => { drawn = true; draw(); });
-    once(host, () => { series.forEach(ser => { if (ser._p) ser._p.style.strokeDashoffset = 0; }); drawn = true; });
-    const its = series.find(s => s.id === 'sgaz_c').x;
+    if (keys) series.forEach(ser => { const sp = el('span'); sp.append(el('i', 'k' + ser.cls.slice(1)), document.createTextNode(ser.short)); keys.append(sp); });
+    // (1) until the chart is reached, a redraw keeps the lines hidden for the draw-in
+    onResize(host, draw);
+    once(host, () => { drawn = true; $$('path.draw', host).forEach(p => { p.style.strokeDashoffset = 0; }); });
+    const its = (series.find(s => s.id === 'sgaz_c') || series[0]).x;
     tableView(host, ['반복', ...series.map(s => s.short)], its.map(it => [String(it), ...series.map(ser => { const i = ser.x.indexOf(it); return i < 0 ? '–' : String(ser.y[i]); })]));
-  })();
+  });
 
   /* ---------- 07: score histogram, v16 vs v17 ---------- */
-  (function dist() {
+  figure('dist', function () {
     const host = $('#distPlot'), all = D.dist, E = D.distEdges; if (!host || !all || !E) return;
     host.classList.add('st-plot');
     const pick = [['v16', 'v16', 'v16 · 같은 정보'], ['sgaz', 'sgaz', 'v17 SGAZ']].map(([id, cls, short]) => ({ ...all.find(d => d.id === id), cls, short })).filter(d => d.counts);
@@ -359,31 +374,32 @@
         if (i % 4 === 0) sv('text', { x: pl + i * band + band / 2, y: H - 6, 'text-anchor': 'middle' }, s).textContent = i === n - 1 ? '100+' : E[i];
         const hit = sv('rect', { class: 'hit', x: pl + i * band, y: pt, width: band, height: ih }, s);
         hit.addEventListener('pointerenter', () => {
+          const colors = rects.map(r => getComputedStyle(r).fill);
           rects.forEach(r => r.classList.add('on'));
-          tip.show(pl + i * band, pt, binLabel(i), pick.map((d, j) => [getComputedStyle(rects[j]).fill, d.short, d.counts[i] + '판']));
+          tip.show(pl + i * band, pt, binLabel(i), pick.map((d, j) => [colors[j], d.short, d.counts[i] + '판']));
         });
         hit.addEventListener('pointerleave', () => { rects.forEach(r => r.classList.remove('on')); tip.hide(); });
       }
       const under = d => d.counts.slice(0, 4).reduce((a, b) => a + b, 0);
       const note = sv('text', { class: 'lbl-strong', x: W - pr, y: pt + 12, 'text-anchor': 'end' }, s);
-      note.textContent = `20점 미만: v16 ${under(pick[0])}판 → v17 ${under(pick[1])}판`;
+      if (pick.length === 2) note.textContent = `20점 미만: v16 ${under(pick[0])}판 → v17 ${under(pick[1])}판`;
     };
     draw();
     const keys = $('#distKeys');
-    if (keys) pick.forEach(d => { const sp = el('span'), i = el('i', 'box'); i.style.background = getComputedStyle(host.querySelector('rect.' + d.cls)).fill; sp.append(i, document.createTextNode(`${d.short} · 평균 ${d.mean}`)); keys.append(sp); });
-    onResize(() => { draw(); host.classList.add('shown'); });
+    if (keys) pick.forEach(d => { const sp = el('span'); sp.append(el('i', 'box k-' + d.cls), document.createTextNode(`${d.short} · 평균 ${d.mean}`)); keys.append(sp); });
+    onResize(host, draw);
     once(host, () => host.classList.add('shown'));
     tableView(host, ['점수 구간', ...pick.map(d => d.short)], E.map((_, i) => [binLabel(i), ...pick.map(d => String(d.counts[i]))]));
-  })();
+  });
 
   /* ---------- 07: difficulty — strength vs human-likeness ---------- */
-  (function levels() {
+  figure('levels', function () {
     const host = $('#lvPlot'), L = D.levels, S = D.shippedLevels; if (!host || !L || !S) return;
     host.classList.add('st-plot');
     host.setAttribute('role', 'img');
     host.setAttribute('aria-label', 'β별 평균 점수와 사람과 같은 수 비율: ' + L.map(l => `β ${l.beta} ${l.argmaxMean}점 ${l.match}%`).join(', '));
     const pickEl = $('#lvPick'), sc = $('#lvScore'), mt = $('#lvMatch'), bt = $('#lvBeta');
-    let cur = 4, auto = !reduce, timer = 0, sel = null, selDot = null, geo = null;
+    let cur = 4, auto = !reduce, hold = false, timer = 0, sel = null, selDot = null, geo = null;
     const pointOf = lv => (lv.mode === 'sample' ? null : L.find(l => l.beta === lv.beta));
     const draw = () => {
       host.querySelector('svg') && host.querySelector('svg').remove();
@@ -429,7 +445,7 @@
       const lv = S[i], p = L.find(l => l.beta === lv.beta);
       $$('button', pickEl).forEach((b, j) => { b.classList.toggle('is-on', j === i); b.setAttribute('aria-pressed', j === i); });
       countTo(sc, lv.mean, 1, 600);
-      mt.textContent = lv.mode === 'sample' ? '–' : p.match + '%';
+      mt.textContent = lv.mode === 'sample' || !p ? '–' : p.match + '%';
       bt.textContent = lv.beta + (lv.mode === 'sample' ? ' · 확률대로 뽑기' : '');
       place();
     };
@@ -439,11 +455,19 @@
       b.addEventListener('click', () => { auto = false; clearTimeout(timer); set(i); });
       pickEl.append(b);
     });
-    draw(); set(cur); onResize(draw);
+    draw(); set(cur); onResize(host, draw);
     let started = false;
-    const loop = () => { clearTimeout(timer); if (!auto) return; timer = setTimeout(() => { if (!auto) return; set((cur + 1) % S.length); loop(); }, 2200); };
-    once($('#levels'), () => { started = true; if (auto) set(0); loop(); }, 0.4);
-    watch($('#levels'), v => { if (!v) clearTimeout(timer); else if (started) loop(); });
-    tableView(host, ['β', '평균 점수', '확률 뽑기', '사람과 같은 수'], L.map(l => [String(l.beta), String(l.argmaxMean), String(l.sampleMean), l.match + '%']));
-  })();
+    const box = $('#levels');
+    const loop = () => { clearTimeout(timer); if (!auto || hold) return; timer = setTimeout(() => { if (!auto || hold) return; set((cur + 1) % S.length); loop(); }, 2200); };
+    const holdOn = () => { hold = true; clearTimeout(timer); }, holdOff = () => { hold = false; if (started) loop(); };
+    box.addEventListener('pointerenter', holdOn); box.addEventListener('pointerleave', holdOff);
+    box.addEventListener('focusin', holdOn); box.addEventListener('focusout', holdOff);
+    once(box, () => { started = true; if (auto && !hold) set(0); loop(); }, 0.4);
+    watch(box, v => { if (!v) clearTimeout(timer); else if (started) loop(); });
+    // (7) the table spans the whole card, under the readout and the plot
+    tableView(host.closest('.st-lv-body') || host, ['β', '평균 점수', '확률 뽑기', '사람과 같은 수'], L.map(l => [String(l.beta), String(l.argmaxMean), String(l.sampleMean), l.match + '%']));
+  });
+
+  pauseOffscreen($('.st-flow'));
+  pauseOffscreen($('.st-finds'));
 })();
