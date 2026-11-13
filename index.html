@@ -194,17 +194,17 @@
           <div class="xc">
             <div class="xc-in" style="--c1:#8b5cf6;--c2:#ec4899;--c3:#170c2a">
               <figure class="xc-float xc-chart">
-                <figcaption>가중치 메모리 · 이론치</figcaption>
-                <ul class="bars" data-max="100" data-unit="%" data-digits="0">
-                  <li data-v="100">FP16</li>
-                  <li data-v="65">SparseGPT</li>
-                  <li data-v="16" class="best">+ W4A16</li>
+                <figcaption>모델 파일 크기 · MB</figcaption>
+                <ul class="bars" data-max="2600" data-digits="0">
+                  <li data-v="2558.8">BF16</li>
+                  <li data-v="971.3" class="best">GPTQ</li>
+                  <li data-v="1257.0">2:4+GPTQ</li>
                 </ul>
               </figure>
               <div class="xc-mid">
                 <span class="xc-id">exp/03 · LLM 경량화</span>
                 <h3>EXAONE 경량화</h3>
-                <p>프루닝으로 구조를 먼저 정하고, 양자화가 남은 오차를 나누도록 순서를 설계했습니다.</p>
+                <p>GPTQ 4bit 양자화와 2:4 프루닝을 겹치고, 저장된 파일까지 다시 열어 확인했습니다.</p>
                 <a class="xc-btn" href="projects/exaone.html">View project ↗</a>
               </div>
               <figure class="xc-float xc-img"><img src="assets/img/ex-prune.webp" alt="프루닝 개념도" loading="lazy" /></figure>

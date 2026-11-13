@@ -51,73 +51,183 @@
     <div class="sheet-foot"><span>wonchan · AI Engineer</span><nav><a href="https://github.com/Matail" target="_blank" rel="noopener">github ↗</a><a href="https://matail.party" target="_blank" rel="noopener">matail.party ↗</a></nav></div>
   </div>
 
-  <main class="cs">
-    <header class="cs-hero" data-hero style="--c1:#8b5cf6;--c2:#ec4899;--c3:#170c2a">
+  <main class="cs ex-page">
+    <header class="cs-hero ex-hero" data-hero style="--c1:#8b5cf6;--c2:#ec4899;--c3:#170c2a">
+      <div class="ex-hgrid" id="heroGrid" aria-hidden="true"></div>
+      <p class="ex-phase" aria-hidden="true"><i></i><span id="heroPhase">BF16 원본</span></p>
       <div class="cs-hero-in">
         <p class="cs-kicker">exp/03 · LLM 경량화</p>
         <h1>EXAONE 경량화</h1>
-        <p class="cs-tag">성능은 지키고, 코스트는 줄여라.</p>
+        <p class="cs-tag">성능은 지키고, 크기는 줄이고.</p>
       </div>
     </header>
 
-    <div class="cs-strip" aria-label="자료">
-      <div class="cs-track">
-          <figure><img src="../assets/img/ex-prune.webp" alt="프루닝 · 남길 연결을 고르는 축" loading="lazy" /><figcaption>프루닝 · 남길 연결을 고르는 축</figcaption></figure>
-          <figure><img src="../assets/img/ex-quant.webp" alt="양자화 · 비트 수를 줄이는 축" loading="lazy" /><figcaption>양자화 · 비트 수를 줄이는 축</figcaption></figure>
-          <figure><img src="../assets/img/ex-benchmark.webp" alt="지켜야 할 기준 · EXAONE 4.0 벤치마크" loading="lazy" /><figcaption>지켜야 할 기준 · EXAONE 4.0 벤치마크</figcaption></figure>
-          <figure><img src="../assets/img/ex-slm.webp" alt="LLM을 SLM으로 줄이는 경량화" loading="lazy" /><figcaption>LLM을 SLM으로 줄이는 경량화</figcaption></figure>
-          <figure><img src="../assets/img/ex-cert.webp" alt="LG AIMERS 8기 LLM 과정 수료" loading="lazy" /><figcaption>LG AIMERS 8기 LLM 과정 수료</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/ex-prune.webp" alt="" loading="lazy" /><figcaption>프루닝 · 남길 연결을 고르는 축</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/ex-quant.webp" alt="" loading="lazy" /><figcaption>양자화 · 비트 수를 줄이는 축</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/ex-benchmark.webp" alt="" loading="lazy" /><figcaption>지켜야 할 기준 · EXAONE 4.0 벤치마크</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/ex-slm.webp" alt="" loading="lazy" /><figcaption>LLM을 SLM으로 줄이는 경량화</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/ex-cert.webp" alt="" loading="lazy" /><figcaption>LG AIMERS 8기 LLM 과정 수료</figcaption></figure>
-      </div>
-    </div>
-
     <div class="cs-wrap">
-      <section class="cs-block cs-center reveal">
-        <p class="eyebrow">The problem</p>
-        <h2>4bit 양자화만으로는 압축률에 한계가 있었습니다.</h2>
-        <p>더 세게 밀어붙이면 품질이 급격히 떨어질 위험이 있었습니다.</p>
+
+      <!-- 01 · 프로젝트 개요 -->
+      <section class="cs-sec" id="overview">
+        <div class="cs-head reveal">
+          <p class="eyebrow">01 · 프로젝트 개요</p>
+          <h2>1.2B 모델을, 더 작고 빠르게</h2>
+          <p class="st-lede">LG Aimers 8기 해커톤에서 EXAONE-4.0-1.2B에 GPTQ 4bit 양자화와 SparseGPT 프루닝을 겹쳐 적용했습니다. 점수는 정확도와 모델 파일 크기로 매겼습니다.</p>
+        </div>
+        <ol class="st-journey reveal" aria-label="모델 파일 크기">
+          <li><b data-count="2558.8">2,558.8</b><span>원본 BF16 · MB</span><em>model.safetensors 기준</em></li>
+          <li class="is-good"><b data-count="971.3">971.3</b><span>GPTQ W4A16 · MB</span><em>원본 대비 −62%</em></li>
+          <li><b data-count="1257.0">1,257.0</b><span>2:4 프루닝 + GPTQ · MB</span><em>마지막 제출본</em></li>
+        </ol>
+        <dl class="st-facts reveal">
+          <div><dt>기간</dt><dd>2026.01 – 02</dd></div>
+          <div><dt>형태</dt><dd>LG Aimers 8기 · 팀 참가</dd></div>
+          <div><dt>역할</dt><dd>GPTQ · SparseGPT 압축 실험</dd></div>
+          <div><dt>스택</dt><dd>llmcompressor · compressed-tensors · PyTorch · vLLM</dd></div>
+        </dl>
+        <div class="cs-links reveal"><a href="../assets/img/ex-cert.webp" target="_blank" rel="noopener">수료증 ↗</a></div>
       </section>
 
-      <section class="cs-block">
-        <div class="cs-center reveal">
-          <p class="eyebrow">The result</p>
-          <h2>프루닝과 양자화, 두 압축 축을 동시에 걸었습니다.</h2>
+      <!-- 02 · 개발 계기 -->
+      <section class="cs-sec" id="why">
+        <div class="cs-head reveal">
+          <p class="eyebrow">02 · 개발 계기</p>
+          <h2>스마트폰용 모델보다, 더 작게</h2>
+        </div>
+        <div class="st-why">
+          <div class="reveal"><i>01</i><b>LLM을 제대로 배우고 싶었다</b><p>LG AI연구원 전문가 강의로 한 달간 LLM과 모델 압축을 배웠습니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>02</i><b>온디바이스 요구</b><p>노트북용 2.4B, 스마트폰용 1.2B가 있지만 더 작고 빠른 모델이 필요했습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>03</i><b>줄이면 정확도가 무너진다</b><p>파라미터만 줄이면 정확도가 크게 떨어져, 크기와 정확도를 함께 봐야 했습니다.</p></div>
+        </div>
+        <figure class="chart ex-arch reveal reveal-scale" id="archFig">
+          <figcaption><span>EXAONE-4.0-1.2B 구조 · 어디를 압축하나</span><span class="st-keys"><span><i class="box k-q"></i>4bit로 압축</span><span><i class="box k-keep"></i>그대로 둠</span></span></figcaption>
+          <div class="ex-arch-body">
+            <div class="ex-stack" id="archStack" aria-hidden="true"></div>
+            <ul class="ex-arch-facts">
+              <li><b>30</b><span>층 · 모두 full attention</span></li>
+              <li><b>2048 → 4096</b><span>hidden → FFN</span></li>
+              <li><b>32 / 8</b><span>어텐션 헤드 / KV 헤드 (GQA)</span></li>
+              <li><b>102,400</b><span>어휘 · 입력·출력 임베딩 공유</span></li>
+            </ul>
+          </div>
+        </figure>
+      </section>
+
+      <!-- 03 · 내가 한 일 -->
+      <section class="cs-sec" id="role">
+        <div class="cs-head reveal">
+          <p class="eyebrow">03 · 내가 한 일</p>
+          <h2>압축 방식을 바꿔 가며 모델을 만들었습니다</h2>
+        </div>
+        <div class="st-why">
+          <div class="reveal"><i>GPTQ</i><b>4bit 양자화 기준선</b><p>공식 베이스라인(LB 0.5±0.02)을 바탕으로 W4A16 모델을 만들었습니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>SparseGPT</i><b>프루닝 결합</b><p>비정형 50%와 2:4 구조 두 가지로 프루닝을 양자화와 겹쳤습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>Recipe</i><b>순서와 범위</b><p>프루닝 뒤 양자화 순서로, q·k·down 층까지 압축 범위를 넓혔습니다.</p></div>
+        </div>
+      </section>
+
+      <!-- 04 · 개발 과정 -->
+      <section class="cs-sec" id="process">
+        <div class="cs-head reveal">
+          <p class="eyebrow">04 · 개발 과정</p>
+          <h2>한 달의 교육, 그리고 세 번의 압축</h2>
+        </div>
+        <ol class="st-time ex-time reveal" id="timeline">
+          <li><time>2026.01</time><b>LLM 교육</b><p>NLP · LLM Agent · 모델 압축 · 평가 · EXAONE 구조</p></li>
+          <li class="solo"><time>02.04 – 05</time><b>첫 GPTQ</b><p>W4A16 · 971.3MB</p></li>
+          <li class="solo"><time>02.13 –</time><b>비정형 50% + GPTQ</b><p>1,390.7MB</p></li>
+          <li class="solo now"><time>– 02.20</time><b>2:4 + GPTQ</b><p>marlin-24 · 1,257.0MB</p></li>
+        </ol>
+        <div class="ex-mask reveal reveal-scale" id="maskFig" data-mode="dense">
+          <div class="ex-mask-top">
+            <div class="seg" role="group" aria-label="프루닝 방식">
+              <button type="button" data-mode="dense" class="is-on" aria-pressed="true">비정형 50%</button>
+              <button type="button" data-mode="24" aria-pressed="false">2:4 구조</button>
+            </div>
+            <span class="ex-mask-note" id="maskNote">0이 흩어져 있어 그대로 저장됩니다</span>
+          </div>
+          <div class="ex-mask-body">
+            <div class="ex-mat" id="maskMat" aria-hidden="true"></div>
+            <div class="ex-mask-read">
+              <small>저장되는 가중치</small>
+              <div class="ex-bytes"><i id="maskBytes"></i></div>
+              <p id="maskRead">535MB · 0도 함께 저장</p>
+            </div>
+          </div>
+        </div>
+        <div class="lg-pipe ex-pipe reveal reveal-scale" aria-label="압축 순서">
+          <div class="lg-step"><small>01</small><b>캘리브레이션</b><span>1,024 샘플 × 512 토큰</span></div>
+          <div class="lg-step hot"><small>02</small><b>SparseGPT</b><span>남길 가중치를 먼저 고름</span></div>
+          <div class="lg-step hot"><small>03</small><b>GPTQ W4A16</b><span>남은 가중치를 4bit로, 오차는 나눠 받음</span></div>
+          <div class="lg-step"><small>04</small><b>저장</b><span>compressed-tensors · 약 18분</span></div>
+        </div>
+      </section>
+
+      <!-- 05 · 결과 -->
+      <section class="cs-sec" id="result">
+        <div class="cs-head reveal">
+          <p class="eyebrow">05 · 결과</p>
+          <h2>2,558.8MB에서 971.3MB까지</h2>
+          <p class="st-lede">메모리 점수가 곧 파일 크기라, 저장된 model.safetensors 크기로 버전을 비교했습니다.</p>
         </div>
         <figure class="chart reveal reveal-scale">
-          <figcaption><span>EXAONE 4.0 1.2B 가중치 메모리 · 이론치</span></figcaption>
-          <ul class="bars" data-max="100" data-unit="%" data-digits="0">
-            <li data-v="100">FP16 원본</li>
-            <li data-v="65">SparseGPT 35%</li>
-            <li data-v="16" class="best">+ GPTQ W4A16</li>
+          <figcaption><span>model.safetensors 크기 · 버전별</span></figcaption>
+          <ul class="bars ex-bars" data-max="2600" data-unit="MB" data-digits="1">
+            <li data-v="2558.8">원본 BF16</li>
+            <li data-v="971.3" class="best">첫 GPTQ</li>
+            <li data-v="1390.7">비정형 50% + GPTQ</li>
+            <li data-v="1257.0">2:4 + GPTQ</li>
           </ul>
         </figure>
       </section>
 
-      <section class="cs-split">
-        <div class="cs-sticky reveal reveal-left">
-          <p class="eyebrow">Process</p>
-          <h2>순서가 성능입니다.</h2>
+      <!-- 06 · 성과 -->
+      <section class="cs-sec" id="award">
+        <div class="cs-head reveal">
+          <p class="eyebrow">06 · 성과</p>
+          <h2>LG Aimers 8기 LLM 과정 수료</h2>
         </div>
-        <ol class="cs-steps">
-            <li class="reveal reveal-right" style="--d:0ms"><b>FP16 원본</b><span>EXAONE 4.0 1.2B에서 출발했습니다. GPTQ baseline은 LB 0.5±0.02.</span></li>
-            <li class="reveal reveal-right" style="--d:90ms"><b>SparseGPT로 구조 확정</b><span>sparsity 35%, 2:4 구조적 마스크로 남길 가중치를 먼저 골랐습니다.</span></li>
-            <li class="reveal reveal-right" style="--d:180ms"><b>GPTQ로 오차 재분배</b><span>확정된 구조 위에서 W4A16 양자화가 남은 오차를 나누도록 했습니다.</span></li>
-            <li class="reveal reveal-right" style="--d:270ms"><b>민감 레이어 살리기</b><span>baseline에서 뺐던 레이어를 다시 넣고 캘리브레이션을 강화했습니다.</span></li>
-        </ol>
+        <div class="st-award">
+          <div class="cs-metrics">
+            <div class="reveal"><b data-count="62" data-prefix="−" data-suffix="%">−62%</b><span>첫 GPTQ 모델 · 원본 대비 크기</span></div>
+            <div class="reveal" style="--d:90ms"><b>W4A16 · 2:4</b><span>양자화와 구조적 프루닝을 함께 적용</span></div>
+          </div>
+          <figure class="cs-fig reveal"><a class="photo" href="../assets/img/ex-cert.webp" target="_blank" rel="noopener"><img src="../assets/img/ex-cert.webp" alt="LG AIMERS 8기 LLM 과정 수료증" loading="lazy" width="558" height="780" /></a><figcaption>LG AIMERS 8기 LLM 과정 수료증</figcaption></figure>
+        </div>
       </section>
 
-      <section class="cs-block cs-center reveal">
-        <p class="eyebrow">Learnings</p>
-        <h2>겹쳐 쓰는 압축에는 검증이 필요합니다.</h2>
-        <div class="cs-lessons">
-          <div><b>겹치면 ablation부터</b><p>A만, B만, A+B를 모두 비교해야 조합이 안전합니다.</p></div>
-          <div><b>레이어 민감도는 균일하지 않다</b><p>레이어마다 근거를 재고 압축 강도를 정해야 합니다.</p></div>
+      <!-- 07 · 다시 확인한 것 -->
+      <section class="cs-sec" id="now">
+        <div class="cs-head reveal">
+          <p class="eyebrow">07 · 다시 확인한 것</p>
+          <h2>설정값이 아니라, 저장된 파일을 열어 봤습니다</h2>
+          <p class="st-lede">해커톤이 끝난 뒤 저장된 모델의 safetensors 헤더와 레시피를 직접 읽어 다시 확인했습니다.</p>
         </div>
-        <div class="cs-links"><a href="../assets/img/ex-cert.webp" target="_blank" rel="noopener">수료증 ↗</a></div>
+        <div class="ex-dup reveal reveal-scale" id="dupFig">
+          <div class="ex-dup-row">
+            <div class="ex-blk emb"><small>embed_tokens</small><b>102,400 × 2,048</b></div>
+            <i class="ex-tie" aria-hidden="true"><span>tie_word_embeddings</span></i>
+            <div class="ex-blk head"><small>lm_head</small><b>같은 값을 한 번 더</b><em>+420MB</em></div>
+          </div>
+          <p class="ex-dup-cap">입출력 임베딩을 공유하도록 설정돼 있는데, 나중 모델들에는 lm_head가 따로 한 벌 더 저장돼 있었습니다. 첫 GPTQ 모델(971.3MB)에는 이 텐서가 없습니다.</p>
+        </div>
+        <div class="st-finds">
+          <div class="reveal"><i>1</i><b>lm_head 중복 저장</b><p>나중 모델마다 약 420MB씩 더 컸습니다.</p><strong>2:4 모델 1,257 → 약 838MB</strong></div>
+          <div class="reveal" style="--d:90ms"><i>2</i><b>비정형 프루닝은 크기 이득 없음</b><p>0도 dense 형식으로 저장돼 파일 크기가 GPTQ만 쓴 것과 같았습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>3</i><b>35% 설정은 적용되지 않음</b><p>2:4 구조는 정의상 항상 50%입니다. 선형층은 50%, 전체 기준 0.434가 측정됐습니다.</p></div>
+          <div class="reveal" style="--d:270ms"><i>4</i><b>로컬 추론 검증 미완</b><p>vLLM으로 모델을 직접 띄워 보는 노트북은 실행 기록이 없었습니다.</p></div>
+        </div>
+      </section>
+
+      <!-- 08 · 인사이트 -->
+      <section class="cs-sec" id="insight">
+        <div class="cs-head reveal">
+          <p class="eyebrow">08 · 인사이트</p>
+          <h2>압축은 겹칠수록 검증이 필요합니다</h2>
+        </div>
+        <div class="st-why insights">
+          <div class="reveal"><i>01</i><b>겹치면 ablation부터</b><p>A만, B만, A+B를 모두 비교해야 조합이 안전합니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>02</i><b>저장된 결과를 본다</b><p>35% 설정도, 중복된 lm_head도 파일을 열어 보고서야 드러났습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>03</i><b>메모리는 형식까지</b><p>0을 많이 만들어도 dense로 저장하면 크기는 그대로입니다.</p></div>
+        </div>
+        <div class="cs-links reveal"><a href="../assets/img/ex-cert.webp" target="_blank" rel="noopener">수료증 ↗</a></div>
       </section>
     </div>
 
@@ -127,5 +237,6 @@
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/charts.js"></script>
   <script src="../assets/js/motion.js"></script>
+  <script src="../assets/js/exaone.js"></script>
 </body>
 </html>
