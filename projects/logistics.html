@@ -51,8 +51,10 @@
     <div class="sheet-foot"><span>wonchan · AI Engineer</span><nav><a href="https://github.com/Matail" target="_blank" rel="noopener">github ↗</a><a href="https://matail.party" target="_blank" rel="noopener">matail.party ↗</a></nav></div>
   </div>
 
-  <main class="cs">
-    <header class="cs-hero" data-hero style="--c1:#ff7a2f;--c2:#b5292b;--c3:#22100a">
+  <main class="cs lg-page">
+    <header class="cs-hero lg-hero" data-hero style="--c1:#ff7a2f;--c2:#b5292b;--c3:#22100a">
+      <div class="lg-hmap" id="heroMap" aria-hidden="true"></div>
+      <p class="lg-route" aria-hidden="true"><i></i><span id="heroRoute">Houston → New York</span></p>
       <div class="cs-hero-in">
         <p class="cs-kicker">exp/02 · 데이터 · 예측</p>
         <h1>물류 운송비 예측</h1>
@@ -60,34 +62,107 @@
       </div>
     </header>
 
-    <div class="cs-strip" aria-label="자료">
-      <div class="cs-track">
-          <figure><img src="../assets/img/fa-dashboard.webp" alt="대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석" loading="lazy" /><figcaption>대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석</figcaption></figure>
-          <figure><img src="../assets/img/fa-accuracy.webp" alt="모델별 실용 정확도" loading="lazy" /><figcaption>모델별 실용 정확도</figcaption></figure>
-          <figure><img src="../assets/img/fa-rmse.webp" alt="품목·거리·출발 지역별 오차 분해" loading="lazy" /><figcaption>품목·거리·출발 지역별 오차 분해</figcaption></figure>
-          <figure><img src="../assets/img/fa-title.webp" alt="산학 과제 개요" loading="lazy" /><figcaption>산학 과제 개요</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/fa-dashboard.webp" alt="" loading="lazy" /><figcaption>대시보드 · 경로, 예상 비용, Feature Importance, LLM 분석</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/fa-accuracy.webp" alt="" loading="lazy" /><figcaption>모델별 실용 정확도</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/fa-rmse.webp" alt="" loading="lazy" /><figcaption>품목·거리·출발 지역별 오차 분해</figcaption></figure>
-          <figure aria-hidden="true"><img src="../assets/img/fa-title.webp" alt="" loading="lazy" /><figcaption>산학 과제 개요</figcaption></figure>
-      </div>
-    </div>
-
     <div class="cs-wrap">
-      <section class="cs-block cs-center reveal">
-        <p class="eyebrow">The problem</p>
-        <h2>같은 거리라도 품목·유가·경기에 따라 비용이 달라집니다.</h2>
-        <p>단순 거리 기반 추천은 실제 운송비와 물류 흐름을 반영하지 못했습니다.</p>
+
+      <!-- 01 · 프로젝트 개요 -->
+      <section class="cs-sec" id="overview">
+        <div class="cs-head reveal">
+          <p class="eyebrow">01 · 프로젝트 개요</p>
+          <h2>경로와 품목을 넣으면, 내년 운송비와 절감안이 나옵니다</h2>
+          <p class="st-lede">미국 화물 통계(FAF5)에 유가·경기·인구 데이터를 붙여 운송비를 예측하고, LLM이 비용을 줄일 방법을 설명하는 대시보드입니다.</p>
+        </div>
+        <div class="lg-io reveal reveal-scale" aria-label="입력에서 출력까지">
+          <div class="lg-io-in">
+            <span>경로</span><span>품목</span><span>톤수</span><span>연도</span>
+          </div>
+          <i class="wire" aria-hidden="true"></i>
+          <div class="lg-io-mid"><small>4 models</small><b>RandomForest</b><span>XGBoost · LightGBM · CatBoost</span></div>
+          <i class="wire" aria-hidden="true"></i>
+          <div class="lg-io-out">
+            <div><small>예측</small><b>내년 운송비</b></div>
+            <div><small>LLM</small><b>절감 방안</b></div>
+          </div>
+        </div>
+        <dl class="st-facts reveal">
+          <div><dt>기간</dt><dd>2026.03 – 06</dd></div>
+          <div><dt>팀</dt><dd>NOMAD 4인 · NGL Korea 산학 과제</dd></div>
+          <div><dt>역할</dt><dd>데이터 전처리 · 프론트엔드</dd></div>
+          <div><dt>스택</dt><dd>pandas · RandomForest · Optuna · FastAPI · llama-3.3-70b</dd></div>
+        </dl>
+        <div class="cs-links reveal"><a href="https://github.com/NOMADATASCIENCE/FAF5_Features/tree/develop" target="_blank" rel="noopener">github ↗</a></div>
       </section>
 
-      <section class="cs-block">
-        <div class="cs-center reveal">
-          <p class="eyebrow">The result</p>
-          <h2>RandomForest가 ±10% 이내 70.3%로 가장 실용적이었습니다.</h2>
+      <!-- 02 · 개발 계기 -->
+      <section class="cs-sec" id="why">
+        <div class="cs-head reveal">
+          <p class="eyebrow">02 · 개발 계기</p>
+          <h2>같은 거리, 다른 운송비</h2>
+        </div>
+        <div class="st-why">
+          <div class="reveal"><i>01</i><b>실제 기업의 과제</b><p>데이터사이언스 강의에서 NGL Korea가 미국 화물 통계로 풀 과제를 냈습니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>02</i><b>미국 물류의 중심, 트럭</b><p>감에 의존하던 트럭 운송 결정을 데이터로 바꾸는 것이 목표였습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>03</i><b>거리만으론 부족</b><p>같은 거리라도 품목·유가·경기에 따라 비용이 크게 달라집니다.</p></div>
+        </div>
+        <figure class="chart lg-spread reveal reveal-scale" id="spreadChart">
+          <figcaption><span id="spreadCap">거리 구간별 운송비(cost_proxy) 분포</span><span class="st-keys" id="spreadKeys"></span></figcaption>
+          <div class="st-plot" id="spreadPlot"></div>
+        </figure>
+      </section>
+
+      <!-- 03 · 내가 한 일 -->
+      <section class="cs-sec" id="role">
+        <div class="cs-head reveal">
+          <p class="eyebrow">03 · 내가 한 일</p>
+          <h2>데이터를 한 줄로 묶고, 화면으로 보여 줬습니다</h2>
+        </div>
+        <div class="lg-roles">
+          <div class="lg-role reveal">
+            <div class="lg-role-fig" aria-hidden="true">
+              <span class="src">FAF5</span><span class="src">유가</span><span class="src">경기</span><span class="src">인구</span>
+              <span class="row"></span>
+            </div>
+            <b>데이터 전처리</b>
+            <p>FAF5와 외부 데이터를 연도·경로·품목·거리 단위의 한 행으로 합치고, 파생 변수와 VIF로 학습용 데이터셋을 만들었습니다.</p>
+          </div>
+          <div class="lg-role reveal" style="--d:90ms">
+            <div class="lg-role-fig ui" aria-hidden="true"><span class="map"></span><span class="card a"></span><span class="card b"></span><span class="card c"></span></div>
+            <b>프론트엔드</b>
+            <p>경로 지도, 예측 운송비 카드, 비용 요인 차트, LLM 분석 화면을 만들었습니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 · 개발 과정 -->
+      <section class="cs-sec" id="process">
+        <div class="cs-head reveal">
+          <p class="eyebrow">04 · 개발 과정</p>
+          <h2>흩어진 데이터를, 학습 가능한 한 줄로</h2>
+        </div>
+        <div class="lg-pipe reveal reveal-scale" id="pipe" aria-label="전처리와 학습 과정"></div>
+        <div class="lg-split reveal" aria-label="학습 · 검증 · 테스트 연도">
+          <small>연도로 나눈 데이터</small>
+          <ol>
+            <li class="tr"><span>2017</span></li><li class="tr"><span>2018</span></li><li class="tr"><span>2019</span></li><li class="tr"><span>2020</span></li>
+            <li class="va"><span>2021</span></li><li class="te"><span>2022</span></li>
+          </ol>
+          <p><i class="tr"></i>학습 <i class="va"></i>검증 <i class="te"></i>테스트 · 미래 연도를 맞히는지 봅니다.</p>
+        </div>
+        <figure class="chart reveal reveal-scale" id="vifChart">
+          <figcaption><span id="vifCap">VIF · 다중공선성 검사</span><span class="st-keys" id="vifKeys"></span></figcaption>
+          <div class="st-plot" id="vifPlot"></div>
+        </figure>
+      </section>
+
+      <!-- 05 · 결과 -->
+      <section class="cs-sec" id="result">
+        <div class="cs-head reveal">
+          <p class="eyebrow">05 · 결과</p>
+          <h2>RandomForest, ±10% 이내 70.3%</h2>
+          <p class="st-lede">테스트 연도(2022) 예측이 실제 운송비와 얼마나 가까운지로 4개 모델을 비교했습니다.</p>
         </div>
         <figure class="chart reveal reveal-scale">
           <figcaption><span>오차 이내 예측 비율 · 원 스케일 cost_proxy</span>
-            <span class="seg" data-for="lgBars"><button class="is-on" data-key="v">±10%</button><button data-key="v2">±20%</button></span></figcaption>
+            <span class="seg" data-for="lgBars"><button type="button" class="is-on" data-key="v">±10%</button><button type="button" data-key="v2">±20%</button></span></figcaption>
           <ul class="bars" id="lgBars" data-max="100" data-unit="%">
             <li data-v="70.3" data-v2="98.2" class="best">RandomForest</li>
             <li data-v="52.2" data-v2="84.0">XGBoost</li>
@@ -95,29 +170,48 @@
             <li data-v="4.6" data-v2="13.2">CatBoost</li>
           </ul>
         </figure>
+        <div class="lg-err reveal reveal-scale" id="errBox">
+          <div class="lg-err-top">
+            <div class="seg" role="group" aria-label="오차를 나눌 기준" id="errTabs"></div>
+            <span class="st-keys" id="errKeys"></span>
+          </div>
+          <div class="lg-err-body">
+            <div class="st-plot" id="errPlot"></div>
+            <div class="lg-err-map" id="errMap" aria-hidden="true"></div>
+          </div>
+        </div>
       </section>
 
-      <section class="cs-split">
-        <div class="cs-sticky reveal reveal-left">
-          <p class="eyebrow">Process</p>
-          <h2>흩어진 데이터를 하나의 학습 가능한 형태로.</h2>
+      <!-- 06 · 성과 -->
+      <section class="cs-sec" id="award">
+        <div class="cs-head reveal">
+          <p class="eyebrow">06 · 성과</p>
+          <h2>4개 모델과 LLM이 함께 답하는 대시보드</h2>
         </div>
-        <ol class="cs-steps">
-            <li class="reveal reveal-right" style="--d:0ms"><b>FAF5 + 외부 데이터</b><span>품목·거리·물동량에 유가, 거시경제, 인구 이동을 한 행으로 결합했습니다.</span></li>
-            <li class="reveal reveal-right" style="--d:90ms"><b>조합 단위 재구성</b><span>연도 × 출발·도착 × 품목 × 거리 단위로 2017–22년 데이터를 다시 묶었습니다.</span></li>
-            <li class="reveal reveal-right" style="--d:180ms"><b>VIF로 중복 제거</b><span>정보가 겹치는 Feature를 다중공선성 검사로 걸러냈습니다.</span></li>
-            <li class="reveal reveal-right" style="--d:270ms"><b>Optuna × 4 → LLM</b><span>4개 모델을 튜닝해 RF를 고르고, llama-3.3-70b가 절감 대안을 설명합니다.</span></li>
-        </ol>
+        <div class="cs-metrics">
+          <div class="reveal"><b data-count="70.3" data-suffix="%">70.3%</b><span>RandomForest · ±10% 이내</span></div>
+          <div class="reveal" style="--d:90ms"><b data-count="98.2" data-suffix="%">98.2%</b><span>RandomForest · ±20% 이내</span></div>
+          <div class="reveal" style="--d:180ms"><b>2017–22</b><span>통합한 FAF5 데이터</span></div>
+        </div>
+        <figure class="cs-fig lg-dash reveal">
+          <a class="photo" href="../assets/img/fa-dashboard.webp" target="_blank" rel="noopener"><img src="../assets/img/fa-dashboard.webp" alt="운송비 예측 대시보드: 경로 지도, 예상 비용, Feature Importance, LLM 분석" loading="lazy" width="1300" height="640" /></a>
+          <figcaption>완성한 대시보드 · 경로 지도, 내년 예상 운송비, 비용 요인, LLM 절감 분석</figcaption>
+        </figure>
+        <ul class="lg-feat" id="dashFeat"></ul>
       </section>
 
-      <section class="cs-block cs-center reveal">
-        <p class="eyebrow">Learnings</p>
-        <h2>큰 데이터와 작은 팀이 가르쳐 준 것.</h2>
-        <div class="cs-lessons">
-          <div><b>메모리도 분석이다</b><p>큰 데이터에서는 메모리 관리가 분석만큼 중요했습니다.</p></div>
-          <div><b>예시로 소통한다</b><p>말로 어긋날 때는 예시 결과물을 먼저 보여주는 것이 가장 빨랐습니다.</p></div>
+      <!-- 07 · 인사이트 -->
+      <section class="cs-sec" id="insight">
+        <div class="cs-head reveal">
+          <p class="eyebrow">07 · 인사이트</p>
+          <h2>큰 데이터와 작은 팀이 가르쳐 준 것</h2>
         </div>
-        <div class="cs-links"><a href="https://github.com/NOMADATASCIENCE/FAF5_Features/tree/develop" target="_blank" rel="noopener">github ↗</a></div>
+        <div class="st-why insights">
+          <div class="reveal"><i>01</i><b>메모리도 분석이다</b><p>큰 화물 통계에서는 메모리 관리가 분석만큼 중요했습니다.</p></div>
+          <div class="reveal" style="--d:90ms"><i>02</i><b>말보다 예시</b><p>지도 기능이 번역 과정에서 빠졌을 때, 레퍼런스와 구상도를 보여 주자 바로 맞춰졌습니다.</p></div>
+          <div class="reveal" style="--d:180ms"><i>03</i><b>사소한 오해, 다른 결과물</b><p>네 명뿐이어도 이해한 내용을 자주 맞춰 봐야 같은 결과물이 나옵니다.</p></div>
+        </div>
+        <div class="cs-links reveal"><a href="https://github.com/NOMADATASCIENCE/FAF5_Features/tree/develop" target="_blank" rel="noopener">github ↗</a></div>
       </section>
     </div>
 
@@ -127,5 +221,8 @@
   <script src="../assets/js/main.js"></script>
   <script src="../assets/js/charts.js"></script>
   <script src="../assets/js/motion.js"></script>
+  <script src="../assets/js/us-map.js"></script>
+  <script src="../assets/js/logistics-data.js"></script>
+  <script src="../assets/js/logistics.js"></script>
 </body>
 </html>

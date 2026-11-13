@@ -776,6 +776,132 @@ main > *, .footer { position: relative; z-index: 2; }
   .st-deck li { width: 24px; height: 32px; }
 }
 
+/* ---------- Logistics page (logistics.js): reuses the st- figure parts, adds lg- ones ---------- */
+.lg-page { --lg-warm: #ff9a5a; --lg-blue: #6ea8ff; --lg-violet: #b48cff; --lg-gray: var(--muted); }
+[data-theme='light'] .lg-page { --lg-warm: #c2410c; --lg-blue: #2563eb; --lg-violet: #7c3aed; }
+.lg-page .cs-sec { padding-top: 130px; }
+.lg-page .cs-sub { margin-top: 96px; }
+
+/* hero: freight routes over the US */
+.lg-hero .cs-hero-in { position: relative; z-index: 1; }
+.lg-hero .cs-hero-in::before { content: ''; position: absolute; inset: -70px -140px; z-index: -1; background: radial-gradient(closest-side, rgba(24, 8, 4, .62), rgba(24, 8, 4, .3) 60%, transparent); pointer-events: none; }
+.lg-route { position: absolute; left: 50%; bottom: 44px; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; translate: -50% 0; background: rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); font: 600 12px var(--sans); letter-spacing: .02em; color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.lg-route i { width: 8px; height: 8px; border-radius: 50%; background: #ffd2a8; box-shadow: 0 0 8px #ffb37a; }
+.lg-hmap { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.lg-hmap svg { width: min(1180px, 96vw); height: auto; opacity: .95; }
+.lg-hmap .us { fill: rgba(255, 255, 255, .035); stroke: rgba(255, 255, 255, .16); stroke-width: .7; }
+.lg-hmap .route { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.3; stroke-dasharray: 3 6; stroke-linecap: round; }
+.lg-hmap .route.on { stroke: #fff; stroke-width: 1.8; stroke-dasharray: none; }
+.lg-hmap .hub { fill: #fff; }
+.lg-hmap .hub-ring { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: ring 2.4s ease-out infinite; }
+.lg-hmap .truck { fill: #ffd2a8; filter: drop-shadow(0 0 6px rgba(255, 190, 140, .9)); }
+.lg-hero.off .hub-ring { animation-play-state: paused; }
+@keyframes ring { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }
+
+/* 01: inputs -> models -> outputs */
+.lg-io { display: grid; grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr) 48px minmax(0, 1fr); align-items: center; margin-top: 40px; padding: 26px 24px; border-radius: 16px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+.lg-io-in { display: flex; flex-wrap: wrap; gap: 8px; }
+.lg-io-in span { padding: 8px 12px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-2); font-size: 13px; }
+.lg-io-mid { padding: 14px 16px; border-radius: 10px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--ok); }
+.lg-io-mid small, .lg-io-out small { font: 600 10px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lg-io-mid b { display: block; margin-top: 4px; font-size: 16px; font-weight: 600; }
+.lg-io-mid span { display: block; margin-top: 4px; font-size: 12px; color: var(--fg-2); }
+.lg-io-out { display: grid; gap: 8px; }
+.lg-io-out div { padding: 12px 14px; border-radius: 10px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line-2); }
+.lg-io-out b { display: block; margin-top: 2px; font-size: 14px; font-weight: 600; }
+.lg-io.in .lg-io-in span { animation: chipIn .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms); }
+@keyframes chipIn { from { opacity: 0; transform: translateY(8px); } }
+
+/* 02: same distance, different cost */
+.lg-spread { margin-top: 18px; }
+.st-plot .box { fill: color-mix(in srgb, var(--lg-warm) 30%, transparent); }
+.st-plot .whisk { stroke: var(--muted); stroke-width: 1.5; }
+.st-plot .med { stroke: var(--fg); stroke-width: 2; }
+.st-plot .spread-on .box { fill: color-mix(in srgb, var(--lg-warm) 55%, transparent); }
+
+/* 03: two roles with small animated sketches */
+.lg-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
+.lg-role { padding: 24px; border-radius: 16px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+.lg-role b { display: block; margin-top: 18px; font-size: 16px; font-weight: 600; }
+.lg-role p { margin-top: 6px; font-size: 14px; line-height: 1.6; color: var(--fg-2); }
+.lg-role-fig { position: relative; height: 96px; border-radius: 10px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.lg-role-fig .src { position: absolute; top: 14px; padding: 4px 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-2); font-size: 11px; color: var(--fg-2); transition: transform 1s var(--ease), opacity .6s; }
+.lg-role-fig .src:nth-child(1) { left: 6%; } .lg-role-fig .src:nth-child(2) { left: 30%; } .lg-role-fig .src:nth-child(3) { left: 52%; } .lg-role-fig .src:nth-child(4) { left: 74%; }
+.lg-role-fig .row { position: absolute; left: 6%; right: 6%; bottom: 16px; height: 22px; border-radius: 6px; background: linear-gradient(90deg, var(--ok), color-mix(in srgb, var(--ok) 40%, transparent)); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease) .7s; }
+.lg-role.in .lg-role-fig .src { transform: translateY(42px) scale(.9); opacity: .25; }
+.lg-role.in .lg-role-fig .row { transform: none; }
+.lg-role-fig.ui .map { position: absolute; left: 10px; top: 10px; bottom: 10px; width: 54%; border-radius: 6px; background: color-mix(in srgb, var(--lg-blue) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lg-blue) 50%, transparent); }
+.lg-role-fig.ui .map::after { content: ''; position: absolute; left: 14%; top: 60%; width: 70%; height: 2px; background: var(--lg-warm); transform: rotate(-18deg) scaleX(0); transform-origin: left; transition: transform 1s var(--ease) .4s; }
+.lg-role.in .lg-role-fig.ui .map::after { transform: rotate(-18deg); }
+.lg-role-fig.ui .card { position: absolute; right: 10px; width: 36%; height: 20px; border-radius: 5px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line-2); opacity: 0; transform: translateX(10px); transition: opacity .5s, transform .6s var(--ease); }
+.lg-role-fig.ui .card.a { top: 10px; transition-delay: .5s; } .lg-role-fig.ui .card.b { top: 38px; transition-delay: .7s; } .lg-role-fig.ui .card.c { top: 66px; transition-delay: .9s; }
+.lg-role.in .lg-role-fig.ui .card { opacity: 1; transform: none; }
+
+/* 04: pipeline, year split */
+.lg-pipe { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; margin-top: 40px; padding: 24px; border-radius: 16px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); counter-reset: p; }
+.lg-step { position: relative; padding: 14px; border-radius: 10px; background: var(--bg); box-shadow: inset 0 0 0 1px var(--line-2); opacity: 0; transform: translateY(10px); transition: opacity .5s var(--ease), transform .6s var(--ease), box-shadow .3s; transition-delay: calc(var(--i) * 140ms); }
+.lg-pipe.in .lg-step { opacity: 1; transform: none; }
+.lg-step small { font: 600 10px var(--sans); letter-spacing: .12em; color: var(--ok); }
+.lg-step b { display: block; margin-top: 6px; font-size: 14px; font-weight: 600; }
+.lg-step span { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--fg-2); }
+.lg-step + .lg-step::before { content: ''; position: absolute; left: -10px; top: 50%; width: 10px; height: 2px; background: var(--line-2); }
+.lg-step.hot { box-shadow: inset 0 0 0 1px var(--ok); }
+.lg-split { margin-top: 18px; padding: 20px 24px; border-radius: 16px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+.lg-split small { font: 600 10px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lg-split ol { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin-top: 12px; list-style: none; }
+.lg-split li { position: relative; height: 34px; border-radius: 6px; background: var(--bg); overflow: hidden; }
+.lg-split li::before { content: ''; position: absolute; inset: 0; transform: scaleX(0); transform-origin: left; transition: transform .6s var(--ease); transition-delay: calc(var(--i) * 120ms + 200ms); }
+.lg-split.in li::before { transform: none; }
+.lg-split li span { position: relative; display: grid; place-items: center; height: 100%; font: 600 12px var(--sans); }
+.lg-split .tr::before, .lg-split i.tr { background: color-mix(in srgb, var(--lg-blue) 55%, var(--bg)); }
+.lg-split .va::before, .lg-split i.va { background: color-mix(in srgb, var(--lg-violet) 60%, var(--bg)); }
+.lg-split .te::before, .lg-split i.te { background: color-mix(in srgb, var(--ok) 60%, var(--bg)); }
+.lg-split p { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; font-size: 12.5px; color: var(--fg-2); }
+.lg-split p i { display: inline-block; width: 12px; height: 8px; margin-left: 6px; border-radius: 2px; }
+.lg-page #vifChart { margin-top: 18px; }
+.st-plot .vif { fill: var(--dim); }
+.st-plot .vif.keep { fill: var(--ok); }
+.st-plot .vif.drop { fill: transparent; stroke: var(--st-bad, #ff7b72); stroke-width: 1; stroke-dasharray: 3 3; }
+
+/* 05: error breakdown with a PADD map */
+.lg-err { margin-top: 18px; padding: 22px 24px 24px; border-radius: 16px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+.lg-err-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.lg-err .seg button { padding: 7px 12px; font-size: 12px; }
+.lg-err .seg button:focus-visible { outline: 2px solid var(--ok); outline-offset: -3px; }
+.lg-err .st-keys { font-size: 12px; color: var(--muted); }
+.lg-err-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: center; margin-top: 18px; }
+.lg-err.with-map .lg-err-body { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+.lg-err-map { display: none; }
+.lg-err.with-map .lg-err-map { display: block; }
+.lg-err-map svg { width: 100%; height: auto; }
+.lg-err-map path { stroke: var(--bg-2); stroke-width: .8; transition: fill .6s var(--ease); }
+.lg-err-map text { font: 600 22px var(--sans); fill: var(--fg); paint-order: stroke; stroke: var(--bg-2); stroke-width: 4px; }
+.st-plot .m-rf { fill: var(--ok); } .st-plot .m-xgb { fill: var(--lg-blue); } .st-plot .m-lgbm { fill: var(--lg-violet); } .st-plot .m-cat { fill: var(--dim); }
+.st-keys .k-rf { background: var(--ok); } .st-keys .k-xgb { background: var(--lg-blue); } .st-keys .k-lgbm { background: var(--lg-violet); } .st-keys .k-cat { background: var(--dim); }
+
+/* 06 */
+.lg-dash { margin-top: 18px; }
+.lg-feat { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; list-style: none; }
+.lg-feat li { padding: 8px 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-2); font-size: 13px; color: var(--fg-2); }
+.lg-feat li b { margin-right: 6px; color: var(--ok); font-weight: 600; }
+
+@media (max-width: 960px) {
+  .lg-io { grid-template-columns: 1fr; }
+  .lg-io .wire { width: 2px; height: 26px; margin: 6px auto; background: repeating-linear-gradient(180deg, var(--fg-2) 0 6px, transparent 6px 12px) 0 0 / 2px 12px; animation-name: flowY; }
+  .lg-io .wire::after { right: auto; top: auto; bottom: -2px; left: -4px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid var(--fg-2); border-bottom: 0; }
+  .lg-roles { grid-template-columns: 1fr; }
+  .lg-pipe { grid-auto-flow: row; grid-auto-columns: auto; }
+  .lg-step + .lg-step::before { left: 50%; top: -10px; width: 2px; height: 10px; }
+  .lg-err.with-map .lg-err-body { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .lg-page .cs-sec { padding-top: 110px; }
+  .lg-split ol { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-step, .lg-split li::before, .lg-role-fig .src, .lg-role-fig .row, .lg-role-fig.ui .card { transition: none !important; }
+}
+
 /* ---------- reveal (scroll-in) ---------- */
 .reveal { opacity: 0; transform: translateY(40px); transition: opacity .9s var(--ease), transform 1.1s var(--ease); transition-delay: var(--d, 0ms); }
 .reveal-scale { transform: translateY(40px) scale(.94); }
