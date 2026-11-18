@@ -209,7 +209,11 @@ main > *, .footer { position: relative; z-index: 2; }
 .av-ink { fill: var(--av-ink); stroke: var(--av-ink); stroke-width: 6; stroke-linejoin: round; }
 .av-line { fill: none; stroke: var(--av-ink); stroke-width: 7; stroke-linecap: round; }
 .av-line.thin { stroke-width: 5; }
-.av-eyes { animation: blink 5.5s infinite; transform-origin: 200px 178px; }
+.av-line.brow { stroke-width: 7.5; }
+.av-glasses { fill: none; stroke: var(--av-ink); stroke-width: 8.5; stroke-linejoin: round; stroke-linecap: round; } /* horn-rimmed */
+.av-curl { fill: none; stroke: var(--av-fill); stroke-width: 3; stroke-linecap: round; opacity: .7; } /* perm texture on the hair */
+.av-dot { fill: var(--av-ink); }
+.av-eyes { animation: blink 5.5s infinite; transform-origin: 200px 182px; }
 @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 .hero .avatar { filter: drop-shadow(0 0 1px rgba(255, 255, 255, .5)); }
 [data-theme='dark'] .hero .av-fill { stroke: #111; }
