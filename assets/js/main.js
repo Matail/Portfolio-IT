@@ -221,11 +221,9 @@
     /* ---------- stack: monochrome icon grid, brand colour + name on hover ---------- */
     const SI = slug => 'url(https://cdn.jsdelivr.net/npm/simple-icons@v13/icons/' + slug + '.svg)';
     const stack = [
-      ['python', '#3776AB', 'Python'], ['pytorch', '#EE4C2C', 'PyTorch'], ['numpy', '#4DABCF', 'NumPy'], ['pandas', '#E70488', 'Pandas'], ['scikitlearn', '#F7931E', 'scikit-learn'], ['jupyter', '#F37626', 'Jupyter'],
-      ['huggingface', '#FFD21E', 'Hugging Face'], ['claude', '#D97757', 'Claude'], ['ollama', '#ffffff', 'Ollama'], ['langchain', '#3FB68B', 'LangChain'], ['fastapi', '#009688', 'FastAPI'], ['flask', '#ffffff', 'Flask'],
-      ['typescript', '#3178C6', 'TypeScript'], ['javascript', '#F7DF1E', 'JavaScript'], ['react', '#61DAFB', 'React'], ['nodedotjs', '#5FA04E', 'Node.js'], ['astro', '#BC52EE', 'Astro'], ['threedotjs', '#ffffff', 'three.js'],
-      ['cloudflare', '#F38020', 'Cloudflare'], ['vercel', '#ffffff', 'Vercel'], ['supabase', '#3FCF8E', 'Supabase'], ['docker', '#2496ED', 'Docker'], ['git', '#F05032', 'Git'], ['github', '#ffffff', 'GitHub'],
-      ['unity', '#ffffff', 'Unity'], ['blender', '#E87D0D', 'Blender'], ['figma', '#F24E1E', 'Figma'], ['notion', '#ffffff', 'Notion'], ['linux', '#FCC624', 'Linux'], ['anthropic', '#D4A27F', 'Anthropic']
+      ['python', '#3776AB', 'Python'], ['pytorch', '#EE4C2C', 'PyTorch'], ['numpy', '#4DABCF', 'NumPy'], ['pandas', '#E70488', 'Pandas'], ['scikitlearn', '#F7931E', 'scikit-learn'], ['claude', '#D97757', 'Claude'],
+      ['fastapi', '#009688', 'FastAPI'], ['nodedotjs', '#5FA04E', 'Node.js'], ['astro', '#BC52EE', 'Astro'], ['threedotjs', '#ffffff', 'three.js'], ['cloudflare', '#F38020', 'Cloudflare'], ['supabase', '#3FCF8E', 'Supabase'],
+      ['git', '#F05032', 'Git'], ['github', '#ffffff', 'GitHub'], ['unity', '#ffffff', 'Unity'], ['blender', '#E87D0D', 'Blender'], ['figma', '#F24E1E', 'Figma'], ['notion', '#ffffff', 'Notion']
     ];
     const cells = stack.map(([slug, , name], k) => {
       const el = document.createElement('div');
