@@ -12,11 +12,11 @@
     'LLM & Compression': ['GPTQ', 'SparseGPT', 'Knowledge Distillation', 'EXAONE', 'Prompt Design'],
     'Data & Analytics': ['Pandas', '이상치 처리', 'VIF 분석', 'Feature Engineering', '시각화'],
     'Agents & Tooling': ['Claude Agent SDK', 'MCP (FastMCP)', 'Tool Calling', 'Skills', '비동기 Job'],
-    'Full-stack': ['TypeScript', 'Flask', 'Cloudflare Workers', 'D1 · Durable Objects', 'Supabase'],
+    'Full-stack': ['Cloudflare Workers', 'D1 · Durable Objects', 'Supabase'],
     'Game & 3D': ['Unity 6', 'three.js', 'Blender', 'WebGL']
   };
   const cross = [
-    ['PyTorch', 'LLM & Compression'], ['Pandas', 'AI · Machine Learning'], ['Flask', 'Data & Analytics'],
+    ['PyTorch', 'LLM & Compression'], ['Pandas', 'AI · Machine Learning'],
     ['Tool Calling', 'LLM & Compression'], ['three.js', 'Full-stack'], ['모델 평가', 'Data & Analytics'],
     ['MCP (FastMCP)', 'Full-stack'], ['Unity 6', 'Agents & Tooling'], ['EXAONE', 'AI · Machine Learning']
   ];
