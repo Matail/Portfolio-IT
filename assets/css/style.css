@@ -209,7 +209,7 @@ main > *, .footer { position: relative; z-index: 2; }
 .av-ink { fill: var(--av-ink); stroke: var(--av-ink); stroke-width: 6; stroke-linejoin: round; }
 .av-line { fill: none; stroke: var(--av-ink); stroke-width: 7; stroke-linecap: round; }
 .av-line.thin { stroke-width: 5; }
-.av-line.brow { stroke-width: 6.5; }
+.av-line.brow { stroke-width: 7.5; }
 .av-glasses { fill: none; stroke: var(--av-ink); stroke-width: 8.5; stroke-linejoin: round; stroke-linecap: round; } /* horn-rimmed */
 .av-curl { fill: none; stroke: var(--av-fill); stroke-width: 3; stroke-linecap: round; opacity: .7; } /* perm texture on the hair */
 .av-dot { fill: var(--av-ink); }
